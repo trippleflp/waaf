@@ -20,7 +20,7 @@ func main() {
 		Format: "[${ip}]:${port} ${status} - ${method} ${path}\n",
 	}))
 
-	app.Get("/login", handler.LoginHandler)
+	app.Post("/login", handler.LoginHandler)
 	app.Post("/register", handler.RegisterHandler)
 	app.Post("/validate", handler.ValidateHandler)
 	port := os.Getenv("PORT")
