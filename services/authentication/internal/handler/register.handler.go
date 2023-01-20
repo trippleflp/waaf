@@ -16,6 +16,7 @@ type registerBody struct {
 
 func RegisterHandler(c *fiber.Ctx) error {
 	c.Accepts("application/json")
+	c.Set("Content-Type", "text/plain")
 
 	body := registerBody{}
 	err := c.BodyParser(&body)

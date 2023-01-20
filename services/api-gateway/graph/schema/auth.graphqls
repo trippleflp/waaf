@@ -1,0 +1,24 @@
+type Token {
+    token: String!
+}
+
+input UserLoginData {
+    username: String
+    email: String
+    password: String!
+}
+
+input UserRegistrationData {
+    username: String!
+    email: String!
+    password: String!
+}
+
+extend type Query {
+    login(input: UserLoginData!): Token!
+}
+
+extend type Mutation {
+    register(input: UserRegistrationData!): Token!
+}
+

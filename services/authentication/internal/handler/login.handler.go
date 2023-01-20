@@ -15,6 +15,7 @@ type loginBody struct {
 
 func LoginHandler(c *fiber.Ctx) error {
 	c.Accepts("application/json")
+	c.Set("Content-Type", "text/plain")
 
 	body := loginBody{}
 	err := c.BodyParser(&body)
