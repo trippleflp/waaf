@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  authentication:
+    extends:
+      file: ./services/authentication/docker-compose.yaml
+      service: db
+  function-group:
+    extends:
+      file: ./services/function-group/docker-compose.yaml
+      service: db

@@ -1,0 +1,17 @@
+type FunctionGroup {
+    name: String
+    id: String
+    user: [User]
+}
+
+input createFunctionGroupData {
+    name: String!
+}
+
+extend type Query {
+    listEntitledGroups: String!
+}
+
+extend type Mutation {
+    createFunctionGroup(input: createFunctionGroupData!): FunctionGroup
+}

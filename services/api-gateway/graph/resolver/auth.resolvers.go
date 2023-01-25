@@ -7,8 +7,8 @@ package resolver
 import (
 	"context"
 	"fmt"
-	"github.com/imroc/req/v3"
 
+	req "github.com/imroc/req/v3"
 	"gitlab.informatik.hs-augsburg.de/flomon/waaf/services/api-gateway/graph/model"
 )
 
@@ -17,7 +17,7 @@ func (r *mutationResolver) Register(ctx context.Context, input model.UserRegistr
 	resp, err := req.R().
 		SetBody(input).
 		SetContentType("application/json").
-		Post("http://localhost:8000/register")
+		Post("http://localhost:10002/register")
 
 	if err != nil {
 		return nil, err
@@ -36,7 +36,7 @@ func (r *queryResolver) Login(ctx context.Context, input model.UserLoginData) (*
 	resp, err := req.R().
 		SetBody(input).
 		SetContentType("application/json").
-		Post("http://localhost:8000/login")
+		Post("http://localhost:10002/login")
 
 	if err != nil {
 		return nil, err

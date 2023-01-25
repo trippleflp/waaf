@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/imroc/req/v3"
+	"gitlab.informatik.hs-augsburg.de/flomon/waaf/services/api-gateway/auth"
 	"log"
 	"net/http"
 	"os"
@@ -10,9 +11,11 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"gitlab.informatik.hs-augsburg.de/flomon/waaf/services/api-gateway/graph/generated"
 	"gitlab.informatik.hs-augsburg.de/flomon/waaf/services/api-gateway/graph/resolver"
+
+	"github.com/go-chi/chi"
 )
 
-const defaultPort = "8080"
+const defaultPort = "10003"
 
 func main() {
 
@@ -22,11 +25,15 @@ func main() {
 		port = defaultPort
 	}
 
+	router := chi.NewRouter()
+
+	router.Use(auth.Middleware())
+
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &resolver.Resolver{}}))
 
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srv)
+	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
+	router.Handle("/query", srv)
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Fatal(http.ListenAndServe(":"+port, router))
 }

@@ -1,0 +1,4 @@
+type User {
+    userName: String
+    id: String
+}

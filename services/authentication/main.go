@@ -25,7 +25,7 @@ func main() {
 	app.Post("/validate", handler.ValidateHandler)
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8000"
+		port = "10002"
 	}
 	log.Fatal().Err(app.Listen(fmt.Sprintf(":%v", port)))
 }
