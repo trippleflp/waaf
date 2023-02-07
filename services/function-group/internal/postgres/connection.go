@@ -1,7 +1,6 @@
 package postgres
 
 import (
-	"context"
 	"database/sql"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
@@ -44,9 +43,10 @@ func createSchema(db *bun.DB) error {
 	}
 
 	for _, model := range models {
-		if err := db.ResetModel(context.Background(), model); err != nil {
-			return err
-		}
+		//if err := db.ResetModel(context.Background(), model); err != nil {
+		//	return err
+		//}
+		db.RegisterModel(model)
 	}
 	//_, err := db.NewCreateTable().Model((*FunctionGroup)(nil)).Exec(context.Background())
 	//err := db.ResetModel(context.Background(), (*FunctionGroup)(nil))

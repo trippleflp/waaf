@@ -2,24 +2,35 @@ package postgres
 
 import (
 	"context"
+	"github.com/uptrace/bun"
 )
 
-func (c *pgConnection) Exists(userName string, email string, ctx context.Context) (bool, error) {
-	exists, err := c.db.NewSelect().Model((*User)(nil)).
-		Where("user_name LIKE ?", userName).
-		WhereOr("email LIKE ?", email).
+func (c *pgConnection) IsAdmin(userId, groupId string, ctx context.Context) (bool, error) {
+	exists, err := c.db.NewSelect().
+		Model((*User)(nil)).
+		Where("id = uuid(?)", userId).
+		Relation("FunctionGroups", func(q *bun.SelectQuery) *bun.SelectQuery {
+			return q.Where("function_group_id = uuid(?)", groupId)
+		}).
 		Exists(ctx)
-
 	return exists, err
 }
 
-func (c *pgConnection) Authenticate(userName string, email string, passwordHash string, ctx context.Context) (string, error) {
-	var user User
-	err := c.db.NewSelect().Model((*User)(nil)).
-		Where("password = ?", passwordHash).
-		Where("email LIKE ?", email).
-		WhereOr("user_name LIKE ?", userName).
-		Scan(ctx, &user)
+func (c *pgConnection) FunctionGroupExists(groupId string, ctx context.Context) (bool, error) {
+	exists, err := c.db.NewSelect().
+		Model((*FunctionGroup)(nil)).
+		Where("id = uuid(?)", groupId).
+		Exists(ctx)
+	return exists, err
+}
 
-	return user.Id, err
+func (c *pgConnection) GetFunctionGroup(groupId string, ctx context.Context) (*FunctionGroup, error) {
+	functionGroup := new(FunctionGroup)
+	err := c.db.NewSelect().
+		Model(functionGroup).
+		Where("id = uuid(?)", groupId).
+		Relation("Users").
+		Scan(ctx)
+
+	return functionGroup, err
 }

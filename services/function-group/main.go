@@ -21,9 +21,9 @@ func main() {
 		Format: "[${ip}]:${port} ${status} - ${method} ${path}\n",
 	}))
 
-	groupMiddleware := app.Group("/group")
+	groupMiddleware := app.Group("/groups")
 	groupMiddleware.Get("/:name", handler.GroupInfo)
-	groupMiddleware.Post("/addUsers", handler.AddUsers)
+	groupMiddleware.Post("/:id/addUsers", handler.AddUsers)
 	groupMiddleware.Delete("/removeUsers", handler.RemoveUsers)
 	groupMiddleware.Post("/editUserRole", handler.EditUserRole)
 	groupMiddleware.Post("/addFunctions", handler.AddFunctions)

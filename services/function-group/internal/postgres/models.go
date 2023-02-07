@@ -1,21 +1,14 @@
 package postgres
 
-type Roles string
-
-const (
-	AdminRole     Roles = "admin"
-	DeveloperRole Roles = "developer"
-	ReaderRole    Roles = "reader"
-	UserRole      Roles = "user"
-)
+import "gitlab.informatik.hs-augsburg.de/flomon/waaf/services/api-gateway/graph/model"
 
 type FunctionGroupToUserRolePair struct {
 	Id              int64 `bun:"id,pk,autoincrement"`
-	Role            Roles
-	UserId          string
+	Role            model.UserRole
+	UserId          string         `bun:"type:uuid"`
 	FunctionGroup   *FunctionGroup `bun:"rel:belongs-to,join:function_group_id=id"`
 	User            *User          `bun:"rel:belongs-to,join:user_id=id"`
-	FunctionGroupId string
+	FunctionGroupId string         `bun:"type:uuid"`
 }
 
 type User struct {

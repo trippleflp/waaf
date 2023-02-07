@@ -1,10 +1,20 @@
 input FunctionGroupInput {
     name: String
-    id: String
+    id: ID
 }
 
 input createFunctionGroupInput {
     groupName: String!, allowedFunctionGroups: [FunctionGroupInput]
+}
+enum UserRole {
+    ADMIN,
+    USER,
+    READER,
+    DEVELOPER,
+}
+
+input addUserToFunctionGroupInput{
+    userId: ID!, , role: UserRole!
 }
 
 extend type Query {
@@ -13,4 +23,5 @@ extend type Query {
 
 extend type Mutation {
     createFunctionGroup(input: createFunctionGroupInput!): FunctionGroup
+    addUserToFunctionGroup(users:[addUserToFunctionGroupInput!]!, functionGroupId:ID!): FunctionGroup
 }

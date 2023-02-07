@@ -2,6 +2,12 @@
 
 package model
 
+import (
+	"fmt"
+	"io"
+	"strconv"
+)
+
 type FunctionGroup struct {
 	Name                  string             `json:"name"`
 	ID                    string             `json:"id"`
@@ -40,7 +46,57 @@ type UserRegistrationData struct {
 	Password string `json:"password"`
 }
 
+type AddUserToFunctionGroupInput struct {
+	UserID string   `json:"userId"`
+	Role   UserRole `json:"role"`
+}
+
 type CreateFunctionGroupInput struct {
 	GroupName             string                `json:"groupName"`
 	AllowedFunctionGroups []*FunctionGroupInput `json:"allowedFunctionGroups"`
+}
+
+type UserRole string
+
+const (
+	UserRoleAdmin     UserRole = "ADMIN"
+	UserRoleUser      UserRole = "USER"
+	UserRoleReader    UserRole = "READER"
+	UserRoleDeveloper UserRole = "DEVELOPER"
+)
+
+var AllUserRole = []UserRole{
+	UserRoleAdmin,
+	UserRoleUser,
+	UserRoleReader,
+	UserRoleDeveloper,
+}
+
+func (e UserRole) IsValid() bool {
+	switch e {
+	case UserRoleAdmin, UserRoleUser, UserRoleReader, UserRoleDeveloper:
+		return true
+	}
+	return false
+}
+
+func (e UserRole) String() string {
+	return string(e)
+}
+
+func (e *UserRole) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = UserRole(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid UserRole", str)
+	}
+	return nil
+}
+
+func (e UserRole) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }

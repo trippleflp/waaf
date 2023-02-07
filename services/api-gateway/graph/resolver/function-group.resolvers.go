@@ -47,6 +47,38 @@ func (r *mutationResolver) CreateFunctionGroup(ctx context.Context, input model.
 	return nil, fmt.Errorf("got unexpected response, raw dump:\n%s", resp.Dump())
 }
 
+// AddUserToFunctionGroup is the resolver for the addUserToFunctionGroup field.
+func (r *mutationResolver) AddUserToFunctionGroup(ctx context.Context, users []*model.AddUserToFunctionGroupInput, functionGroupID string) (*model.FunctionGroup, error) {
+	userId := auth.UserId(ctx)
+	if userId == nil {
+		return nil, fmt.Errorf("no valid authtoken was provided")
+	}
+
+	var responseData model.FunctionGroup
+	body := models.UserIdWrapper[[]*model.AddUserToFunctionGroupInput]{
+		Data:   users,
+		UserId: *userId,
+	}
+	bodyBytes, err := json.Marshal(body)
+
+	resp, err := req.R().
+		SetBody(bodyBytes).
+		SetResult(&responseData).
+		SetContentType("application/json").
+		Post(fmt.Sprintf("http://localhost:10001/groups/%s/addUsers", functionGroupID))
+
+	if err != nil {
+		return nil, err
+	}
+	if resp.IsError() {
+		return nil, fmt.Errorf("%s", resp.String())
+	}
+	if resp.IsSuccess() {
+		return &responseData, nil
+	}
+	return nil, fmt.Errorf("got unexpected response, raw dump:\n%s", resp.Dump())
+}
+
 // ListEntitledGroups is the resolver for the listEntitledGroups field.
 func (r *queryResolver) ListEntitledGroups(ctx context.Context) (string, error) {
 	userId := auth.UserId(ctx)
