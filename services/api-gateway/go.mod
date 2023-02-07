@@ -4,11 +4,14 @@ go 1.19
 
 replace gitlab.informatik.hs-augsburg.de/flomon/waaf/libs/token v0.0.0 => ../../libs/token
 
+replace gitlab.informatik.hs-augsburg.de/flomon/waaf/libs/models v0.0.0 => ../../libs/models
+
 require (
 	github.com/99designs/gqlgen v0.17.22
 	github.com/go-chi/chi v1.5.4
 	github.com/imroc/req/v3 v3.30.0
 	github.com/vektah/gqlparser/v2 v2.5.1
+	gitlab.informatik.hs-augsburg.de/flomon/waaf/libs/models v0.0.0
 	gitlab.informatik.hs-augsburg.de/flomon/waaf/libs/token v0.0.0
 )
 

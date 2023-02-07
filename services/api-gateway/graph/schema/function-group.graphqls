@@ -1,11 +1,10 @@
-type FunctionGroup {
+input FunctionGroupInput {
     name: String
     id: String
-    user: [User]
 }
 
-input createFunctionGroupData {
-    name: String!
+input createFunctionGroupInput {
+    groupName: String!, allowedFunctionGroups: [FunctionGroupInput]
 }
 
 extend type Query {
@@ -13,5 +12,5 @@ extend type Query {
 }
 
 extend type Mutation {
-    createFunctionGroup(input: createFunctionGroupData!): FunctionGroup
+    createFunctionGroup(input: createFunctionGroupInput!): FunctionGroup
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"gitlab.informatik.hs-augsburg.de/flomon/waaf/services/function-group/internal/handler"
+	"gitlab.informatik.hs-augsburg.de/flomon/waaf/services/function-group/internal/postgres"
 	"os"
 )
 
@@ -37,5 +38,7 @@ func main() {
 	if port == "" {
 		port = "10001"
 	}
+	postgres.GetConnection()
+
 	log.Fatal().Err(app.Listen(fmt.Sprintf(":%v", port)))
 }

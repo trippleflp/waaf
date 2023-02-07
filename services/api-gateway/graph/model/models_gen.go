@@ -2,8 +2,30 @@
 
 package model
 
+type FunctionGroup struct {
+	Name                  string             `json:"name"`
+	ID                    string             `json:"id"`
+	UserIds               []*string          `json:"userIds"`
+	AllowedFunctionGroups []*FunctionGroupID `json:"allowedFunctionGroups"`
+}
+
+type FunctionGroupID struct {
+	Name *string `json:"name"`
+	ID   *string `json:"id"`
+}
+
+type FunctionGroupInput struct {
+	Name *string `json:"name"`
+	ID   *string `json:"id"`
+}
+
 type Token struct {
 	Token string `json:"token"`
+}
+
+type User struct {
+	UserName *string `json:"userName"`
+	ID       *string `json:"id"`
 }
 
 type UserLoginData struct {
@@ -16,4 +38,9 @@ type UserRegistrationData struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type CreateFunctionGroupInput struct {
+	GroupName             string                `json:"groupName"`
+	AllowedFunctionGroups []*FunctionGroupInput `json:"allowedFunctionGroups"`
 }

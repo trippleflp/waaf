@@ -2,3 +2,15 @@ type User {
     userName: String
     id: String
 }
+
+type FunctionGroup {
+    name: String!
+    id: String!
+    userIds: [String]!
+    allowedFunctionGroups:[FunctionGroupID]!
+}
+
+type FunctionGroupID {
+    name: String
+    id: String
+}
