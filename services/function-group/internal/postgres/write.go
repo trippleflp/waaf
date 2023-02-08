@@ -7,9 +7,9 @@ import (
 	"gitlab.informatik.hs-augsburg.de/flomon/waaf/services/api-gateway/graph/model"
 )
 
-func (c *pgConnection) CreateFunctionGroup(userId, groupName string, ctx context.Context) (*string, error) {
+func (c *PgConnection) CreateFunctionGroup(userId, groupName string, ctx context.Context) (*string, error) {
 	groupId := uuid.NewString()
-	if _, err := c.db.NewInsert().Model(&User{Id: userId}).Exec(ctx); err != nil {
+	if _, err := c.CreateUserIfNotExist(userId, ctx); err != nil {
 		return nil, err
 	}
 	if _, err := c.db.NewInsert().
@@ -33,7 +33,7 @@ func (c *pgConnection) CreateFunctionGroup(userId, groupName string, ctx context
 	return &groupId, nil
 }
 
-func (c *pgConnection) AddUsers(users []*model.AddUserToFunctionGroupInput, groupId string, ctx context.Context) ([]string, []string, error) {
+func (c *PgConnection) AddUsers(users []*model.AddUserToFunctionGroupInput, groupId string, ctx context.Context) ([]string, []string, error) {
 	var alreadyAdded []string
 	var newlyAdded []string
 
@@ -50,7 +50,7 @@ func (c *pgConnection) AddUsers(users []*model.AddUserToFunctionGroupInput, grou
 			continue
 		}
 
-		if _, err := c.db.NewInsert().Model(&User{Id: user.UserID}).Ignore().Exec(ctx); err != nil {
+		if _, err := c.CreateUserIfNotExist(user.UserID, ctx); err != nil {
 			return nil, nil, err
 		}
 		if _, err := c.db.NewInsert().

@@ -9,14 +9,14 @@ import (
 )
 
 // const connection
-type pgConnection struct {
+type PgConnection struct {
 	db *bun.DB
 }
 
-var connection = pgConnection{db: nil}
+var connection = PgConnection{db: nil}
 var connectOnce sync.Once
 
-func GetConnection() pgConnection {
+func GetConnection() PgConnection {
 	connectOnce.Do(func() {
 
 		sqlDb := sql.OpenDB(pgdriver.NewConnector(

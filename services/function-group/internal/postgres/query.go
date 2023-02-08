@@ -2,10 +2,11 @@ package postgres
 
 import (
 	"context"
+	"github.com/samber/lo"
 	"github.com/uptrace/bun"
 )
 
-func (c *pgConnection) IsAdmin(userId, groupId string, ctx context.Context) (bool, error) {
+func (c *PgConnection) IsAdmin(userId, groupId string, ctx context.Context) (bool, error) {
 	exists, err := c.db.NewSelect().
 		Model((*User)(nil)).
 		Where("id = uuid(?)", userId).
@@ -16,7 +17,7 @@ func (c *pgConnection) IsAdmin(userId, groupId string, ctx context.Context) (boo
 	return exists, err
 }
 
-func (c *pgConnection) FunctionGroupExists(groupId string, ctx context.Context) (bool, error) {
+func (c *PgConnection) FunctionGroupExists(groupId string, ctx context.Context) (bool, error) {
 	exists, err := c.db.NewSelect().
 		Model((*FunctionGroup)(nil)).
 		Where("id = uuid(?)", groupId).
@@ -24,7 +25,7 @@ func (c *pgConnection) FunctionGroupExists(groupId string, ctx context.Context) 
 	return exists, err
 }
 
-func (c *pgConnection) GetFunctionGroup(groupId string, ctx context.Context) (*FunctionGroup, error) {
+func (c *PgConnection) GetFunctionGroup(groupId string, ctx context.Context) (*FunctionGroup, error) {
 	functionGroup := new(FunctionGroup)
 	err := c.db.NewSelect().
 		Model(functionGroup).
@@ -33,4 +34,18 @@ func (c *pgConnection) GetFunctionGroup(groupId string, ctx context.Context) (*F
 		Scan(ctx)
 
 	return functionGroup, err
+}
+
+func (c *PgConnection) GetEntitledFunctionGroups(userId string, ctx context.Context) ([]string, error) {
+	user := new(User)
+	err := c.db.NewSelect().
+		Model(user).
+		Where("id = uuid(?)", userId).
+		Relation("FunctionGroups").
+		Relation("FunctionGroups.FunctionGroup").
+		Scan(ctx)
+	functionGroupIds := lo.Map[*FunctionGroupToUserRolePair, string](user.FunctionGroups, func(item *FunctionGroupToUserRolePair, index int) string {
+		return item.FunctionGroupId
+	})
+	return functionGroupIds, err
 }

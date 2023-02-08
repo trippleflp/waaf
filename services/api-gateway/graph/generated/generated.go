@@ -84,7 +84,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Login(ctx context.Context, input model.UserLoginData) (*model.Token, error)
-	ListEntitledGroups(ctx context.Context) (string, error)
+	ListEntitledGroups(ctx context.Context) ([]*model.FunctionGroup, error)
 }
 
 type executableSchema struct {
@@ -338,7 +338,7 @@ input addUserToFunctionGroupInput{
 }
 
 extend type Query {
-    listEntitledGroups: String!
+    listEntitledGroups: [FunctionGroup]
 }
 
 extend type Mutation {
@@ -1021,14 +1021,11 @@ func (ec *executionContext) _Query_listEntitledGroups(ctx context.Context, field
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.([]*model.FunctionGroup)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalOFunctionGroup2ᚕᚖgitlabᚗinformatikᚗhsᚑaugsburgᚗdeᚋflomonᚋwaafᚋservicesᚋapiᚑgatewayᚋgraphᚋmodelᚐFunctionGroup(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_listEntitledGroups(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1038,7 +1035,17 @@ func (ec *executionContext) fieldContext_Query_listEntitledGroups(ctx context.Co
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "name":
+				return ec.fieldContext_FunctionGroup_name(ctx, field)
+			case "id":
+				return ec.fieldContext_FunctionGroup_id(ctx, field)
+			case "userIds":
+				return ec.fieldContext_FunctionGroup_userIds(ctx, field)
+			case "allowedFunctionGroups":
+				return ec.fieldContext_FunctionGroup_allowedFunctionGroups(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type FunctionGroup", field.Name)
 		},
 	}
 	return fc, nil
@@ -3457,9 +3464,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_listEntitledGroups(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
 				return res
 			}
 
@@ -4315,6 +4319,47 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOFunctionGroup2ᚕᚖgitlabᚗinformatikᚗhsᚑaugsburgᚗdeᚋflomonᚋwaafᚋservicesᚋapiᚑgatewayᚋgraphᚋmodelᚐFunctionGroup(ctx context.Context, sel ast.SelectionSet, v []*model.FunctionGroup) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOFunctionGroup2ᚖgitlabᚗinformatikᚗhsᚑaugsburgᚗdeᚋflomonᚋwaafᚋservicesᚋapiᚑgatewayᚋgraphᚋmodelᚐFunctionGroup(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
 }
 
 func (ec *executionContext) marshalOFunctionGroup2ᚖgitlabᚗinformatikᚗhsᚑaugsburgᚗdeᚋflomonᚋwaafᚋservicesᚋapiᚑgatewayᚋgraphᚋmodelᚐFunctionGroup(ctx context.Context, sel ast.SelectionSet, v *model.FunctionGroup) graphql.Marshaler {

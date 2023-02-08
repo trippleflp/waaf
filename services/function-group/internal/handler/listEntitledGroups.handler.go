@@ -1,22 +1,78 @@
 package handler
 
 import (
+	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
+	"github.com/samber/lo"
+	lop "github.com/samber/lo/parallel"
+	"gitlab.informatik.hs-augsburg.de/flomon/waaf/libs/models"
+	"gitlab.informatik.hs-augsburg.de/flomon/waaf/services/api-gateway/graph/model"
+	"gitlab.informatik.hs-augsburg.de/flomon/waaf/services/function-group/internal/postgres"
 )
 
-type listEntitledGroupBody struct {
-	userId string `json:"userId"`
-}
+type ListEntitledGroupBody = models.UserIdWrapper[any]
 
 func ListEntitledGroups(c *fiber.Ctx) error {
 
-	body := listEntitledGroupBody{}
-	err := c.BodyParser(&body)
+	body := new(ListEntitledGroupBody)
+	err := c.BodyParser(body)
 	if err != nil {
 		log.Debug().Err(err).Str("body", string(c.Body())).Msg("Body parsing did not work")
 		return fiber.NewError(fiber.StatusBadRequest, "Body can't be parsed")
 	}
 
-	return c.SendString(body.userId)
+	client := postgres.GetConnection()
+	exist, err := client.CreateUserIfNotExist(body.UserId, c.UserContext())
+	if err != nil {
+		log.Debug().Err(err).Str("body", string(c.Body())).Msg("Could not create user")
+		return fiber.NewError(fiber.StatusInternalServerError, "Could not create user")
+	}
+	if !exist {
+		functionGroups := []any{}
+		responseData, err := json.Marshal(functionGroups)
+		if err != nil {
+			log.Debug().Err(err).Interface("functionGroup", functionGroups).Msg("Could not marshall functionGroups")
+			return fiber.NewError(fiber.StatusInternalServerError, "Could not marshall functionGroups")
+		}
+
+		return c.Send(responseData)
+	}
+
+	functionGroupIds, err := client.GetEntitledFunctionGroups(body.UserId, c.UserContext())
+	if err != nil {
+		log.Debug().Err(err).Str("body", string(c.Body())).Msg("Could not read entitled function groups")
+		return fiber.NewError(fiber.StatusInternalServerError, "Could not read entitled function groups")
+	}
+	var functionGroups []*model.FunctionGroup
+
+	errValue, _ := lo.TryWithErrorValue(func() error {
+		functionGroups = lop.Map[string, *model.FunctionGroup](functionGroupIds, func(id string, index int) *model.FunctionGroup {
+			groupRaw, err := client.GetFunctionGroup(id, c.UserContext())
+			if err != nil {
+				panic(err)
+			}
+			group := model.FunctionGroup{
+				Name: groupRaw.Name,
+				ID:   groupRaw.Id,
+				UserIds: lo.Map[*postgres.FunctionGroupToUserRolePair, *string](groupRaw.Users, func(user *postgres.FunctionGroupToUserRolePair, index int) *string {
+					return &user.UserId
+				}),
+			}
+			return &group
+		})
+		return nil
+	})
+	if errValue != nil {
+		log.Debug().Err(err).Str("body", string(c.Body())).Msg("Could not build function group model")
+		return fiber.NewError(fiber.StatusInternalServerError, "Could not build function group model")
+	}
+
+	responseData, err := json.Marshal(functionGroups)
+	if err != nil {
+		log.Debug().Err(err).Interface("functionGroup", functionGroups).Msg("Could not marshall functionGroups")
+		return fiber.NewError(fiber.StatusInternalServerError, "Could not marshall functionGroups")
+	}
+
+	return c.Send(responseData)
 }
