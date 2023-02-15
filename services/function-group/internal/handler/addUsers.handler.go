@@ -9,7 +9,7 @@ import (
 	"gitlab.informatik.hs-augsburg.de/flomon/waaf/services/function-group/internal/postgres"
 )
 
-type AddUserBody = models.UserIdWrapper[[]*model.AddUserToFunctionGroupInput]
+type AddUserBody = models.UserIdWrapper[[]*model.UserRolePairInput]
 
 func AddUsers(c *fiber.Ctx) error {
 	c.Accepts("application/json")

@@ -21,11 +21,11 @@ func main() {
 		Format: "[${ip}]:${port} ${status} - ${method} ${path}\n",
 	}))
 
-	groupMiddleware := app.Group("/groups")
-	groupMiddleware.Post("/:id", handler.GroupInfo)         // done
-	groupMiddleware.Post("/:id/addUsers", handler.AddUsers) // done
-	groupMiddleware.Delete("/removeUsers", handler.RemoveUsers)
-	groupMiddleware.Post("/editUserRole", handler.EditUserRole)
+	groupMiddleware := app.Group("/groups/:id")                 // done
+	groupMiddleware.Post("/", handler.GroupInfo)                // done
+	groupMiddleware.Post("/addUsers", handler.AddUsers)         // done
+	groupMiddleware.Post("/removeUsers", handler.RemoveUsers)   // done
+	groupMiddleware.Post("/editUserRole", handler.EditUserRole) // done
 	groupMiddleware.Post("/addFunctions", handler.AddFunctions)
 	groupMiddleware.Post("/addFunctionGroups", handler.AddFunctionGroups)
 	groupMiddleware.Post("/removeFunctions", handler.RemoveFunctions)

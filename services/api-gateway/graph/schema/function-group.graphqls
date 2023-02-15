@@ -13,7 +13,7 @@ enum UserRole {
     DEVELOPER,
 }
 
-input addUserToFunctionGroupInput{
+input userRolePairInput{
     userId: ID!, , role: UserRole!
 }
 
@@ -24,5 +24,7 @@ extend type Query {
 
 extend type Mutation {
     createFunctionGroup(input: createFunctionGroupInput!): FunctionGroup
-    addUserToFunctionGroup(users:[addUserToFunctionGroupInput!]!, functionGroupId:ID!): FunctionGroup
+    addUserToFunctionGroup(users:[userRolePairInput!]!, functionGroupId:ID!): FunctionGroup
+    removeUserFromFunctionGroup(userIds:[String!]!, functionGroupId:ID!): FunctionGroup
+    editUserRole(data: userRolePairInput): FunctionGroup
 }

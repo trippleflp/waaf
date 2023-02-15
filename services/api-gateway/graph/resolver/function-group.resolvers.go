@@ -48,14 +48,14 @@ func (r *mutationResolver) CreateFunctionGroup(ctx context.Context, input model.
 }
 
 // AddUserToFunctionGroup is the resolver for the addUserToFunctionGroup field.
-func (r *mutationResolver) AddUserToFunctionGroup(ctx context.Context, users []*model.AddUserToFunctionGroupInput, functionGroupID string) (*model.FunctionGroup, error) {
+func (r *mutationResolver) AddUserToFunctionGroup(ctx context.Context, users []*model.UserRolePairInput, functionGroupID string) (*model.FunctionGroup, error) {
 	userId := auth.UserId(ctx)
 	if userId == nil {
 		return nil, fmt.Errorf("no valid authtoken was provided")
 	}
 
 	var responseData model.FunctionGroup
-	body := models.UserIdWrapper[[]*model.AddUserToFunctionGroupInput]{
+	body := models.UserIdWrapper[[]*model.UserRolePairInput]{
 		Data:   users,
 		UserId: *userId,
 	}
@@ -77,6 +77,43 @@ func (r *mutationResolver) AddUserToFunctionGroup(ctx context.Context, users []*
 		return &responseData, nil
 	}
 	return nil, fmt.Errorf("got unexpected response, raw dump:\n%s", resp.Dump())
+}
+
+// RemoveUserFromFunctionGroup is the resolver for the removeUserFromFunctionGroup field.
+func (r *mutationResolver) RemoveUserFromFunctionGroup(ctx context.Context, userIds []string, functionGroupID string) (*model.FunctionGroup, error) {
+	callUserId := auth.UserId(ctx)
+	if callUserId == nil {
+		return nil, fmt.Errorf("no valid authtoken was provided")
+	}
+
+	var responseData model.FunctionGroup
+	body := models.UserIdWrapper[[]string]{
+		Data:   userIds,
+		UserId: *callUserId,
+	}
+	bodyBytes, err := json.Marshal(body)
+
+	resp, err := req.R().
+		SetBody(bodyBytes).
+		SetResult(&responseData).
+		SetContentType("application/json").
+		Post(fmt.Sprintf("http://localhost:10001/groups/%s/removeUsers", functionGroupID))
+
+	if err != nil {
+		return nil, err
+	}
+	if resp.IsError() {
+		return nil, fmt.Errorf("%s", resp.String())
+	}
+	if resp.IsSuccess() {
+		return &responseData, nil
+	}
+	return nil, fmt.Errorf("got unexpected response, raw dump:\n%s", resp.Dump())
+}
+
+// EditUserRole is the resolver for the editUserRole field.
+func (r *mutationResolver) EditUserRole(ctx context.Context, data *model.UserRolePairInput) (*model.FunctionGroup, error) {
+	panic(fmt.Errorf("not implemented: EditUserRole - editUserRole"))
 }
 
 // ListEntitledGroups is the resolver for the listEntitledGroups field.

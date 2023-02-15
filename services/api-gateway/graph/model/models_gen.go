@@ -46,14 +46,14 @@ type UserRegistrationData struct {
 	Password string `json:"password"`
 }
 
-type AddUserToFunctionGroupInput struct {
-	UserID string   `json:"userId"`
-	Role   UserRole `json:"role"`
-}
-
 type CreateFunctionGroupInput struct {
 	GroupName             string                `json:"groupName"`
 	AllowedFunctionGroups []*FunctionGroupInput `json:"allowedFunctionGroups"`
+}
+
+type UserRolePairInput struct {
+	UserID string   `json:"userId"`
+	Role   UserRole `json:"role"`
 }
 
 type UserRole string
