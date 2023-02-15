@@ -19,6 +19,7 @@ input addUserToFunctionGroupInput{
 
 extend type Query {
     listEntitledGroups: [FunctionGroup]
+    getFunctionGroup(functionGroupID: String!): FunctionGroup!
 }
 
 extend type Mutation {

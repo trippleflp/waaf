@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/samber/lo"
 	"github.com/uptrace/bun"
+	"gitlab.informatik.hs-augsburg.de/flomon/waaf/services/api-gateway/graph/model"
 )
 
 func (c *PgConnection) IsAdmin(userId, groupId string, ctx context.Context) (bool, error) {
@@ -11,7 +12,24 @@ func (c *PgConnection) IsAdmin(userId, groupId string, ctx context.Context) (boo
 		Model((*User)(nil)).
 		Where("id = uuid(?)", userId).
 		Relation("FunctionGroups", func(q *bun.SelectQuery) *bun.SelectQuery {
-			return q.Where("function_group_id = uuid(?)", groupId)
+			return q.Where("role = ?", model.UserRoleAdmin).Where("function_group_id = uuid(?)", groupId)
+		}).
+		Exists(ctx)
+	return exists, err
+}
+
+func (c *PgConnection) IsAtLeastReader(userId, groupId string, ctx context.Context) (bool, error) {
+	exists, err := c.db.NewSelect().
+		Model((*User)(nil)).
+		Where("id = uuid(?)", userId).
+		Relation("FunctionGroups", func(q *bun.SelectQuery) *bun.SelectQuery {
+			return q.
+				WhereGroup(" AND  ", func(q *bun.SelectQuery) *bun.SelectQuery {
+					return q.Where("role = ?", model.UserRoleAdmin).
+						WhereOr("role = ?", model.UserRoleDeveloper).
+						WhereOr("role = ?", model.UserRoleReader)
+				}).
+				Where("function_group_id = uuid(?)", groupId)
 		}).
 		Exists(ctx)
 	return exists, err

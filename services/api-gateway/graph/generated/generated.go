@@ -63,6 +63,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		GetFunctionGroup   func(childComplexity int, id string) int
 		ListEntitledGroups func(childComplexity int) int
 		Login              func(childComplexity int, input model.UserLoginData) int
 	}
@@ -85,6 +86,7 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Login(ctx context.Context, input model.UserLoginData) (*model.Token, error)
 	ListEntitledGroups(ctx context.Context) ([]*model.FunctionGroup, error)
+	GetFunctionGroup(ctx context.Context, id string) (*model.FunctionGroup, error)
 }
 
 type executableSchema struct {
@@ -179,6 +181,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.Register(childComplexity, args["input"].(model.UserRegistrationData)), true
+
+	case "Query.getFunctionGroup":
+		if e.complexity.Query.GetFunctionGroup == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getFunctionGroup_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetFunctionGroup(childComplexity, args["id"].(string)), true
 
 	case "Query.listEntitledGroups":
 		if e.complexity.Query.ListEntitledGroups == nil {
@@ -339,6 +353,7 @@ input addUserToFunctionGroupInput{
 
 extend type Query {
     listEntitledGroups: [FunctionGroup]
+    getFunctionGroup(id: String!): FunctionGroup!
 }
 
 extend type Mutation {
@@ -438,6 +453,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getFunctionGroup_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -1047,6 +1077,71 @@ func (ec *executionContext) fieldContext_Query_listEntitledGroups(ctx context.Co
 			}
 			return nil, fmt.Errorf("no field named %q was found under type FunctionGroup", field.Name)
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getFunctionGroup(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getFunctionGroup(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetFunctionGroup(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.FunctionGroup)
+	fc.Result = res
+	return ec.marshalNFunctionGroup2ᚖgitlabᚗinformatikᚗhsᚑaugsburgᚗdeᚋflomonᚋwaafᚋservicesᚋapiᚑgatewayᚋgraphᚋmodelᚐFunctionGroup(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getFunctionGroup(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "name":
+				return ec.fieldContext_FunctionGroup_name(ctx, field)
+			case "id":
+				return ec.fieldContext_FunctionGroup_id(ctx, field)
+			case "userIds":
+				return ec.fieldContext_FunctionGroup_userIds(ctx, field)
+			case "allowedFunctionGroups":
+				return ec.fieldContext_FunctionGroup_allowedFunctionGroups(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type FunctionGroup", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getFunctionGroup_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
 	}
 	return fc, nil
 }
@@ -3474,6 +3569,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "getFunctionGroup":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getFunctionGroup(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "__type":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -3885,6 +4003,20 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNFunctionGroup2gitlabᚗinformatikᚗhsᚑaugsburgᚗdeᚋflomonᚋwaafᚋservicesᚋapiᚑgatewayᚋgraphᚋmodelᚐFunctionGroup(ctx context.Context, sel ast.SelectionSet, v model.FunctionGroup) graphql.Marshaler {
+	return ec._FunctionGroup(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNFunctionGroup2ᚖgitlabᚗinformatikᚗhsᚑaugsburgᚗdeᚋflomonᚋwaafᚋservicesᚋapiᚑgatewayᚋgraphᚋmodelᚐFunctionGroup(ctx context.Context, sel ast.SelectionSet, v *model.FunctionGroup) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._FunctionGroup(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNFunctionGroupID2ᚕᚖgitlabᚗinformatikᚗhsᚑaugsburgᚗdeᚋflomonᚋwaafᚋservicesᚋapiᚑgatewayᚋgraphᚋmodelᚐFunctionGroupID(ctx context.Context, sel ast.SelectionSet, v []*model.FunctionGroupID) graphql.Marshaler {

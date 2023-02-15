@@ -22,7 +22,7 @@ func main() {
 	}))
 
 	groupMiddleware := app.Group("/groups")
-	groupMiddleware.Get("/:id", handler.GroupInfo)
+	groupMiddleware.Post("/:id", handler.GroupInfo)         // done
 	groupMiddleware.Post("/:id/addUsers", handler.AddUsers) // done
 	groupMiddleware.Delete("/removeUsers", handler.RemoveUsers)
 	groupMiddleware.Post("/editUserRole", handler.EditUserRole)
@@ -31,8 +31,8 @@ func main() {
 	groupMiddleware.Post("/removeFunctions", handler.RemoveFunctions)
 	groupMiddleware.Post("/removeFunctionGroups", handler.RemoveFunctionGroups)
 
-	app.Post("/list", handler.ListEntitledGroups)
-	app.Post("/create", handler.CreateGroup) // done
+	app.Post("/list", handler.ListEntitledGroups) // done
+	app.Post("/create", handler.CreateGroup)      // done
 	app.Post("/createInternalToken", handler.CreateToken)
 	port := os.Getenv("PORT")
 	if port == "" {

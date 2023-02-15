@@ -107,3 +107,35 @@ func (r *queryResolver) ListEntitledGroups(ctx context.Context) ([]*model.Functi
 	}
 	return nil, fmt.Errorf("got unexpected response, raw dump:\n%s", resp.Dump())
 }
+
+// GetFunctionGroup is the resolver for the getFunctionGroup field.
+func (r *queryResolver) GetFunctionGroup(ctx context.Context, functionGroupID string) (*model.FunctionGroup, error) {
+	userId := auth.UserId(ctx)
+	if userId == nil {
+		return nil, fmt.Errorf("no valid authtoken was provided")
+	}
+
+	var responseData model.FunctionGroup
+	body := models.UserIdWrapper[any]{
+		Data:   nil,
+		UserId: *userId,
+	}
+	bodyBytes, err := json.Marshal(body)
+
+	resp, err := req.R().
+		SetBody(bodyBytes).
+		SetResult(&responseData).
+		SetContentType("application/json").
+		Post(fmt.Sprintf("http://localhost:10001/groups/%s", functionGroupID))
+
+	if err != nil {
+		return nil, err
+	}
+	if resp.IsError() {
+		return nil, fmt.Errorf("%s", resp.String())
+	}
+	if resp.IsSuccess() {
+		return &responseData, nil
+	}
+	return nil, fmt.Errorf("got unexpected response, raw dump:\n%s", resp.Dump())
+}
