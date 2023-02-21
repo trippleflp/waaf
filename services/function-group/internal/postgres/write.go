@@ -33,15 +33,18 @@ func (c *PgConnection) CreateFunctionGroup(userId, groupName string, ctx context
 	return &groupId, nil
 }
 
-func (c *PgConnection) AddUsers(users []*model.AddUserToFunctionGroupInput, groupId string, ctx context.Context) ([]string, []string, error) {
+func (c *PgConnection) AddUsers(users []*model.UserRolePairInput, groupId string, ctx context.Context) ([]string, []string, error) {
 	var alreadyAdded []string
 	var newlyAdded []string
 
 	for _, user := range users {
 		functionGroup := new(FunctionGroup)
-		err := c.db.NewSelect().Model(functionGroup).Relation("Users", func(q *bun.SelectQuery) *bun.SelectQuery {
-			return q.Where("user_id = uuid(?)", user.UserID)
-		}).Scan(ctx)
+		err := c.db.NewSelect().
+			Model(functionGroup).
+			Where("id = uuid(?)", groupId).
+			Relation("Users", func(q *bun.SelectQuery) *bun.SelectQuery {
+				return q.Where("user_id = uuid(?)", user.UserID)
+			}).Scan(ctx)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -67,3 +70,8 @@ func (c *PgConnection) AddUsers(users []*model.AddUserToFunctionGroupInput, grou
 	return newlyAdded, alreadyAdded, nil
 
 }
+
+//func (c *PgConnection) EditUserRole(user model.UserRolePairInput, functionGroupId string) {
+//	functionGroup := new(FunctionGroup)
+//	err := c.db.NewSelect()
+//}

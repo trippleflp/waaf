@@ -26,5 +26,5 @@ extend type Mutation {
     createFunctionGroup(input: createFunctionGroupInput!): FunctionGroup
     addUserToFunctionGroup(users:[userRolePairInput!]!, functionGroupId:ID!): FunctionGroup
     removeUserFromFunctionGroup(userIds:[String!]!, functionGroupId:ID!): FunctionGroup
-    editUserRole(data: userRolePairInput): FunctionGroup
+    editUserRole(data: userRolePairInput!,  functionGroupId:ID!): FunctionGroup
 }

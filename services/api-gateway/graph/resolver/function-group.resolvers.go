@@ -112,8 +112,35 @@ func (r *mutationResolver) RemoveUserFromFunctionGroup(ctx context.Context, user
 }
 
 // EditUserRole is the resolver for the editUserRole field.
-func (r *mutationResolver) EditUserRole(ctx context.Context, data *model.UserRolePairInput) (*model.FunctionGroup, error) {
-	panic(fmt.Errorf("not implemented: EditUserRole - editUserRole"))
+func (r *mutationResolver) EditUserRole(ctx context.Context, data model.UserRolePairInput, functionGroupID string) (*model.FunctionGroup, error) {
+	callUserId := auth.UserId(ctx)
+	if callUserId == nil {
+		return nil, fmt.Errorf("no valid authtoken was provided")
+	}
+
+	var responseData model.FunctionGroup
+	body := models.UserIdWrapper[model.UserRolePairInput]{
+		Data:   data,
+		UserId: *callUserId,
+	}
+	bodyBytes, err := json.Marshal(body)
+
+	resp, err := req.R().
+		SetBody(bodyBytes).
+		SetResult(&responseData).
+		SetContentType("application/json").
+		Post(fmt.Sprintf("http://localhost:10001/groups/%s/editUserRole", functionGroupID))
+
+	if err != nil {
+		return nil, err
+	}
+	if resp.IsError() {
+		return nil, fmt.Errorf("%s", resp.String())
+	}
+	if resp.IsSuccess() {
+		return &responseData, nil
+	}
+	return nil, fmt.Errorf("got unexpected response, raw dump:\n%s", resp.Dump())
 }
 
 // ListEntitledGroups is the resolver for the listEntitledGroups field.
