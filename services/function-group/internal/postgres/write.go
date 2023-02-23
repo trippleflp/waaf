@@ -70,8 +70,3 @@ func (c *PgConnection) AddUsers(users []*model.UserRolePairInput, groupId string
 	return newlyAdded, alreadyAdded, nil
 
 }
-
-//func (c *PgConnection) EditUserRole(user model.UserRolePairInput, functionGroupId string) {
-//	functionGroup := new(FunctionGroup)
-//	err := c.db.NewSelect()
-//}

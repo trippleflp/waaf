@@ -38,7 +38,7 @@ func GetConnection() pgConnection {
 }
 
 func createSchema(db *bun.DB) error {
-	//res, err := db.NewCreateTable().Model((*User)(nil)).Exec(context.Background())
-	err := db.ResetModel(context.Background(), (*User)(nil))
+	_, err := db.NewCreateTable().Model((*User)(nil)).Exec(context.Background())
+	//err := db.ResetModel(context.Background(), (*User)(nil))
 	return err
 }

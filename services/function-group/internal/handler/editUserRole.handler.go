@@ -10,13 +10,13 @@ import (
 	"gitlab.informatik.hs-augsburg.de/flomon/waaf/libs/models"
 )
 
-type EditUserRoleBody = models.UserIdWrapper[[]*model.UserRolePairInput]
+type EditUserRoleBody = models.UserIdWrapper[*model.UserRolePairInput]
 
 func EditUserRole(c *fiber.Ctx) error {
 	c.Accepts("application/json")
 	functionGroupId := c.Params("id")
 
-	body := new(AddUserBody)
+	body := new(EditUserRoleBody)
 	err := c.BodyParser(body)
 	if err != nil {
 		log.Debug().Err(err).Str("body", string(c.Body())).Msg("Body parsing did not work")
@@ -40,19 +40,16 @@ func EditUserRole(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, "Database query failed")
 	}
 	if !isAdmin {
-		log.Debug().Str("body", string(c.Body())).Msg("Only admins can add user")
-		return fiber.NewError(fiber.StatusUnauthorized, "Only admins can add user")
+		log.Debug().Str("body", string(c.Body())).Msg("Only admins can edit user roles")
+		return fiber.NewError(fiber.StatusUnauthorized, "Only admins can edit user roels")
 	}
 
-	newlyAddedUsers, alreadyAddedUsers, err := client.AddUsers(body.Data, functionGroupId, c.UserContext())
+	functionGroup, err := client.EditUserRole(body.Data, functionGroupId, c.UserContext())
 	if err != nil {
-		log.Debug().Err(err).Str("body", string(c.Body())).Msg("User adding failed")
-		return fiber.NewError(fiber.StatusInternalServerError, "User adding failed")
+		log.Debug().Err(err).Str("body", string(c.Body())).Msg("User role editing failed")
+		return fiber.NewError(fiber.StatusInternalServerError, "User role editing failed")
 	}
 
-	log.Debug().Err(err).Interface("newlyAddedUser", newlyAddedUsers).Interface("alreadyAddedUsers", alreadyAddedUsers).Msg("Users added")
-
-	functionGroup, err := client.GetFunctionGroup(functionGroupId, c.UserContext())
 	var userIds []*string
 	for _, user := range functionGroup.Users {
 		userIds = append(userIds, &user.UserId)
