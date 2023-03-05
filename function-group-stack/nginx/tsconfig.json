@@ -1,0 +1,47 @@
+// {
+//   "compileOnSave": true,
+// "compilerOptions": {
+//   "skipLibCheck": true,
+//   "allowJs": false,
+//   "checkJs": false,
+//     "target": "ESNEXT",
+//     "module": "es2015",
+//     "lib": ["ES2015", "ES2016.Array.Include", "ES2017.Object", "ES2017.String"],
+//     "esModuleInterop": true,
+//     "moduleResolution": "node"
+//   },
+//   "include": ["./src"],
+//   "outDir": ["js"],
+//   "files": ["./node_modules/njs-types/ngx_http_js_module.d.ts"]
+// }
+
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "target": "es5",
+    "module": "ES2015",
+    "lib": ["ES2015", "ES2016.Array.Include", "ES2017.Object", "ES2017.String"],
+    // "noEmit": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+
+    "skipLibCheck": true,
+    "allowJs": false,
+    "checkJs": false,
+
+    "moduleResolution": "node",
+    "forceConsistentCasingInFileNames": true,
+    // "esModuleInterop": true
+    "outDir": "js"
+  },
+
+  "include": ["./src"],
+  // "outDir": ["js"],
+  "files": ["./node_modules/njs-types/ngx_http_js_module.d.ts"]
+}
