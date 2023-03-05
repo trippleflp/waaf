@@ -1,0 +1,116 @@
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: nginx-conf
+# data:
+#   nginx.conf: |
+#     load_module /etc/nginx/modules/ngx_http_js_module.so;
+#     events {
+#     }
+
+#     error_log /dev/stdout info;
+
+#     http {
+#         js_path "/etc/nginx/";
+
+#         js_import index.js;
+#         server {
+#             listen 80;
+
+#             location / {
+#                 proxy_pass http://127.0.0.1:8079;
+#                 proxy_pass_request_body off;
+#                 proxy_set_header Content-Length "";
+#                 proxy_set_header X-Original-URI $request_uri;
+#             }
+#         }
+
+#         server {
+#             listen 127.0.0.1:8079;
+
+#             location / {
+#                 # set $group_id ${GROUP_ID};
+#                 set $group_id some_random_uuid
+#                 js_content index.hello;
+#             }
+#         }
+#     }
+# ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: waaf-stack
+  name: waaf-stack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: waaf-stack
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: waaf-stack
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            # - mountPath: /etc/nginx # mount nginx-conf volumn to /etc/nginx
+            #   readOnly: true
+            #   name: nginx-conf
+            - mountPath: /var/log/nginx
+              name: log
+            - mountPath: "/etc/nginx/nginx.conf"
+              name: nginx-stack-config
+              subPath: nginx.conf
+            - mountPath: "/etc/nginx/index.js"
+              name: nginx-stack-config
+              subPath: index.js
+      restartPolicy: Always
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: nginx-conf # place ConfigMap `nginx-conf` on /etc/nginx
+            items:
+              - key: nginx.conf
+                path: nginx.conf
+        - name: log
+          emptyDir: {}
+        - name: nginx-stack-config
+          configMap:
+            name: nginx-stack-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: waaf-stack-nginx-service
+spec:
+  # type: LoadBalancer
+  ports:
+    - port: 80
+      # targetPort: 8888
+  selector:
+    app: waaf-stack
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: waaf-stack-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+    - http:
+        paths:
+          - pathType: Prefix
+            path: /test
+            backend:
+              service:
+                name: waaf-stack-nginx-service
+                port:
+                  number: 80
