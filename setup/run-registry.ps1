@@ -37,3 +37,10 @@ kubectl create deployment hello-server --image=localhost:${reg_port}/hello-app:1
 kubectl rollout status deployment/hello-server
 kubectl get rs
 kubectl delete deploy hello-server
+Write-Output "Connection to local registry successfull"
+
+Write-Output "Test WASM behaivour"
+kubectl run -it --rm --restart=Never wasi-demo --image=hydai/wasm-wasi-example:with-wasm-annotation --annotations="module.wasm.image/variant=compat" /wasi_example_main.wasm 50000000
+Write-Output "Test finished"
+
+Write-Output "Cluster setup finished"
