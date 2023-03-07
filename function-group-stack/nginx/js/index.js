@@ -39,22 +39,34 @@ import jwt_decode from "jwt-decode";
 export function hello(r) {
     var _a;
     return __awaiter(this, void 0, void 0, function () {
-        var jwt, token;
+        var jwt, token, function_data, functionName, port, res;
         return __generator(this, function (_b) {
-            if (!r.headersIn.Authorization) {
-                r.log("No token provided");
-                r.return(403, "No token provided");
-                return [2 /*return*/];
+            switch (_b.label) {
+                case 0:
+                    if (!r.headersIn.Authorization) {
+                        r.log("No token provided");
+                        r.return(403, "No token provided");
+                        return [2 /*return*/];
+                    }
+                    jwt = (_a = r.headersIn.Authorization) === null || _a === void 0 ? void 0 : _a.replace("Bearer ", "");
+                    token = jwt_decode(jwt);
+                    r.log(r.variables.group_id);
+                    r.log(r.variables.GROUP_ID);
+                    if (r.variables.group_id !== token.aud) {
+                        r.return(403, "You are not allowed to use this group.");
+                    }
+                    function_data = JSON.parse(r.variables.function_data);
+                    functionName = r.uri.split("/").reverse()[0];
+                    port = function_data.find(function (f) { return f.name == functionName; });
+                    if (!port) {
+                        r.return(404, "Not found");
+                    }
+                    return [4 /*yield*/, r.subrequest("localhost:" + port)];
+                case 1:
+                    res = _b.sent();
+                    r.return(res.status, res.responseText);
+                    return [2 /*return*/];
             }
-            jwt = (_a = r.headersIn.Authorization) === null || _a === void 0 ? void 0 : _a.replace("Bearer ", "");
-            token = jwt_decode(jwt);
-            r.log(r.variables.group_id);
-            r.log(r.variables.GROUP_ID);
-            if (r.variables.group_id !== token.aud) {
-                r.return(403, "You are not allowed to use this group.");
-            }
-            r.return(200, JSON.stringify(r.variables.group_id));
-            return [2 /*return*/];
         });
     });
 }

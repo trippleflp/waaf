@@ -70,3 +70,52 @@ func (c *PgConnection) AddUsers(users []*model.UserRolePairInput, groupId string
 	return newlyAdded, alreadyAdded, nil
 
 }
+
+func (c *PgConnection) AddFunctionGroups(functionGroupIds []string, targetFunctionGroup string, ctx context.Context) ([]string, []string, []string, error) {
+	var alreadyAdded []string
+	var newlyAdded []string
+	var notExist []string
+
+	for _, fnGroupId := range functionGroupIds {
+		functionGroup := new(FunctionGroup)
+
+		exists, err := c.db.NewSelect().
+			Where("id = uuid(?)", targetFunctionGroup).
+			Exists(ctx)
+
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		if !exists {
+			notExist = append(notExist, fnGroupId)
+			continue
+		}
+
+		err = c.db.NewSelect().
+			Model(functionGroup).
+			Where("id = uuid(?)", targetFunctionGroup).
+			Relation("AllowedFunctionGroupIds", func(q *bun.SelectQuery) *bun.SelectQuery {
+				return q.Where("parent_function_group_id = uuid(?)", fnGroupId)
+			}).Scan(ctx)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		if len(functionGroup.Users) >= 1 {
+			alreadyAdded = append(alreadyAdded, fnGroupId)
+			continue
+		}
+
+		if _, err := c.db.NewInsert().
+			Model(
+				&AllowedFunctionGroupPair{
+					ParentFunctionGroupId: targetFunctionGroup,
+					ChildFunctionGroupId:  fnGroupId,
+				}).
+			Exec(ctx); err != nil {
+			return nil, nil, nil, err
+		}
+		newlyAdded = append(newlyAdded, fnGroupId)
+	}
+	return newlyAdded, alreadyAdded, notExist, nil
+
+}

@@ -17,5 +17,17 @@ export async function hello(r: NginxHTTPRequest) {
     r.return(403, "You are not allowed to use this group.");
   }
 
-  r.return(200, JSON.stringify(r.variables.group_id));
+  const function_data: [{name: string, port: string}] = JSON.parse(r.variables.function_data as string)
+  const functionName = r.uri.split("/").reverse()[0]
+
+  const port = function_data.find(f => f.name == functionName)
+  if(!port) {
+    r.return(404, "Not found");
+
+  }
+
+  const res = await r.subrequest(`localhost:${port}`)
+
+  r.return(res.status, res.responseText);
+
 }

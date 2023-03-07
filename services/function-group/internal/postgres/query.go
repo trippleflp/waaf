@@ -35,6 +35,22 @@ func (c *PgConnection) IsAtLeastReader(userId, groupId string, ctx context.Conte
 	return exists, err
 }
 
+func (c *PgConnection) IsAtLeastDeveloper(userId, groupId string, ctx context.Context) (bool, error) {
+	exists, err := c.db.NewSelect().
+		Model((*User)(nil)).
+		Where("id = uuid(?)", userId).
+		Relation("FunctionGroups", func(q *bun.SelectQuery) *bun.SelectQuery {
+			return q.
+				WhereGroup(" AND  ", func(q *bun.SelectQuery) *bun.SelectQuery {
+					return q.Where("role = ?", model.UserRoleAdmin).
+						WhereOr("role = ?", model.UserRoleDeveloper)
+				}).
+				Where("function_group_id = uuid(?)", groupId)
+		}).
+		Exists(ctx)
+	return exists, err
+}
+
 func (c *PgConnection) FunctionGroupExists(groupId string, ctx context.Context) (bool, error) {
 	exists, err := c.db.NewSelect().
 		Model((*FunctionGroup)(nil)).
@@ -49,6 +65,8 @@ func (c *PgConnection) GetFunctionGroup(groupId string, ctx context.Context) (*F
 		Model(functionGroup).
 		Where("id = uuid(?)", groupId).
 		Relation("Users").
+		Relation("AllowedFunctionGroups").
+		//Relation("AllowedFunctionGroups.ChildFunctionGroup").
 		Scan(ctx)
 
 	return functionGroup, err

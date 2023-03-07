@@ -11,19 +11,29 @@ type FunctionGroupToUserRolePair struct {
 	FunctionGroupId string         `bun:"type:uuid"`
 }
 
+type AllowedFunctionGroupPair struct {
+	Id                    int64          `bun:"id,pk,autoincrement"`
+	ParentFunctionGroup   *FunctionGroup `bun:"rel:belongs-to,join:parent_function_group_id=id"`
+	ParentFunctionGroupId string         `bun:"type:uuid"`
+	ChildFunctionGroup    *FunctionGroup `bun:"rel:belongs-to,join:child_function_group_id=id"`
+	ChildFunctionGroupId  string         `bun:"type:uuid"`
+}
+
 type User struct {
 	Id             string                         `bun:"type:uuid,pk"`
 	FunctionGroups []*FunctionGroupToUserRolePair `bun:"rel:has-many"`
 }
 
 type FunctionGroup struct {
-	Id          string    `bun:"type:uuid,pk"`
-	Name        string    `bun:",unique"`
-	functionIds []*string `bun:",array"`
-	//Users       []User    `bun:"m2m:function_group_to_user_role_pairs,join:FunctionGroup=User"`
-	Users []*FunctionGroupToUserRolePair `bun:"rel:has-many"`
+	Id                    string                         `bun:"type:uuid,pk"`
+	Name                  string                         `bun:",unique"`
+	Functions             []*Function                    `bun:"rel:has-many"`
+	Users                 []*FunctionGroupToUserRolePair `bun:"rel:has-many"`
+	AllowedFunctionGroups []*AllowedFunctionGroupPair    `bun:"rel:has-many"`
 }
 
 type Function struct {
-	FunctionId string `bun:",type:uuid,pk"`
+	FunctionId      string `bun:",type:uuid,pk"`
+	Name            string `bun:",unique"`
+	FunctionGroupId string `bun:"type:uuid"`
 }

@@ -57,6 +57,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		AddFunctionGroups           func(childComplexity int, functionGroupIds []string, targetFunctionGroupID string) int
 		AddUserToFunctionGroup      func(childComplexity int, users []*model.UserRolePairInput, functionGroupID string) int
 		CreateFunctionGroup         func(childComplexity int, input model.CreateFunctionGroupInput) int
 		EditUserRole                func(childComplexity int, data model.UserRolePairInput, functionGroupID string) int
@@ -86,6 +87,7 @@ type MutationResolver interface {
 	AddUserToFunctionGroup(ctx context.Context, users []*model.UserRolePairInput, functionGroupID string) (*model.FunctionGroup, error)
 	RemoveUserFromFunctionGroup(ctx context.Context, userIds []string, functionGroupID string) (*model.FunctionGroup, error)
 	EditUserRole(ctx context.Context, data model.UserRolePairInput, functionGroupID string) (*model.FunctionGroup, error)
+	AddFunctionGroups(ctx context.Context, functionGroupIds []string, targetFunctionGroupID string) (*model.FunctionGroup, error)
 }
 type QueryResolver interface {
 	Login(ctx context.Context, input model.UserLoginData) (*model.Token, error)
@@ -149,6 +151,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.FunctionGroupID.Name(childComplexity), true
+
+	case "Mutation.addFunctionGroups":
+		if e.complexity.Mutation.AddFunctionGroups == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addFunctionGroups_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AddFunctionGroups(childComplexity, args["functionGroupIds"].([]string), args["targetFunctionGroupId"].(string)), true
 
 	case "Mutation.addUserToFunctionGroup":
 		if e.complexity.Mutation.AddUserToFunctionGroup == nil {
@@ -389,6 +403,8 @@ extend type Mutation {
     addUserToFunctionGroup(users:[userRolePairInput!]!, functionGroupId:ID!): FunctionGroup
     removeUserFromFunctionGroup(userIds:[String!]!, functionGroupId:ID!): FunctionGroup
     editUserRole(data: userRolePairInput!,  functionGroupId:ID!): FunctionGroup
+
+    addFunctionGroups(functionGroupIds:[String!]!, targetFunctionGroupId: String!): FunctionGroup
 }
 `, BuiltIn: false},
 	{Name: "../schema/models.graphqls", Input: `type User {
@@ -416,6 +432,30 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_addFunctionGroups_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []string
+	if tmp, ok := rawArgs["functionGroupIds"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("functionGroupIds"))
+		arg0, err = ec.unmarshalNString2ᚕstringᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["functionGroupIds"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["targetFunctionGroupId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("targetFunctionGroupId"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["targetFunctionGroupId"] = arg1
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_addUserToFunctionGroup_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -1167,6 +1207,68 @@ func (ec *executionContext) fieldContext_Mutation_editUserRole(ctx context.Conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_editUserRole_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_addFunctionGroups(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_addFunctionGroups(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AddFunctionGroups(rctx, fc.Args["functionGroupIds"].([]string), fc.Args["targetFunctionGroupId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.FunctionGroup)
+	fc.Result = res
+	return ec.marshalOFunctionGroup2ᚖgitlabᚗinformatikᚗhsᚑaugsburgᚗdeᚋflomonᚋwaafᚋservicesᚋapiᚑgatewayᚋgraphᚋmodelᚐFunctionGroup(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_addFunctionGroups(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "name":
+				return ec.fieldContext_FunctionGroup_name(ctx, field)
+			case "id":
+				return ec.fieldContext_FunctionGroup_id(ctx, field)
+			case "userIds":
+				return ec.fieldContext_FunctionGroup_userIds(ctx, field)
+			case "allowedFunctionGroups":
+				return ec.fieldContext_FunctionGroup_allowedFunctionGroups(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type FunctionGroup", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_addFunctionGroups_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -3708,6 +3810,12 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_editUserRole(ctx, field)
+			})
+
+		case "addFunctionGroups":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_addFunctionGroups(ctx, field)
 			})
 
 		default:

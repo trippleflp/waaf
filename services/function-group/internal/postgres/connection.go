@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"context"
 	"database/sql"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
@@ -27,26 +28,30 @@ func GetConnection() PgConnection {
 
 		db := bun.NewDB(sqlDb, pgdialect.New())
 		connection.db = db
-		createSchema(db)
+		err := createSchema(db)
+		if err != nil {
+			panic(err.Error())
+		}
 	})
 	return connection
 
 }
 
 func createSchema(db *bun.DB) error {
-	//db.RegisterModel((*FunctionGroupToUserRolePair)(nil))
+	db.RegisterModel((*FunctionGroupToUserRolePair)(nil))
 	models := []interface{}{
 		(*Function)(nil),
 		(*FunctionGroupToUserRolePair)(nil),
+		(*AllowedFunctionGroupPair)(nil),
 		(*FunctionGroup)(nil),
 		(*User)(nil),
 	}
 
 	for _, model := range models {
-		//if err := db.ResetModel(context.Background(), model); err != nil {
-		//	return err
-		//}
-		db.RegisterModel(model)
+		if err := db.ResetModel(context.Background(), model); err != nil {
+			return err
+		}
+		//db.RegisterModel(model)
 	}
 	//_, err := db.NewCreateTable().Model((*FunctionGroup)(nil)).Exec(context.Background())
 	//err := db.ResetModel(context.Background(), (*FunctionGroup)(nil))

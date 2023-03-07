@@ -15,8 +15,9 @@ $text = $text.Replace('${reg_port}', $reg_port)
 $text | Out-File -FilePath $temp_regestry_yaml
 
 Write-Output "Create kind cluster"
-
 kind create cluster --config ${temp_regestry_yaml} --image ghcr.io/liquid-reply/kind-crun-wasm:v1.23.0
+# kubectl create clusterrolebinding default-view --clusterrole=view --serviceaccount=default:default
+kubectl create clusterrolebinding serviceaccounts-cluster-admin --clusterrole=cluster-admin --group=system:serviceaccounts
 Write-Output "Kind cluster created"
 
 Write-Output "Connect registry to cluster"
@@ -28,6 +29,10 @@ $text | Out-File -FilePath $temp_registry_config_map
 kubectl apply -f ${temp_registry_config_map}
 Write-Output "Connection established"
 
+Write-Output "Patch ingress controller"
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
+Write-Output "Patch finished"
 
 Write-Output "Test local registry connection"
 docker pull gcr.io/google-samples/hello-app:1.0
@@ -38,6 +43,7 @@ kubectl rollout status deployment/hello-server
 kubectl get rs
 kubectl delete deploy hello-server
 Write-Output "Connection to local registry successfull"
+
 
 Write-Output "Test WASM behaivour"
 kubectl run -it --rm --restart=Never wasi-demo --image=hydai/wasm-wasi-example:with-wasm-annotation --annotations="module.wasm.image/variant=compat" /wasi_example_main.wasm 50000000
