@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+  uploader:
+    build: .
+    restart: always
+    privileged: true
+    ports:
+      - "10004:10004"

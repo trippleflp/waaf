@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func getNginxDeployment(functionGroupName string, functions []*waafFunction) *appsv1.Deployment {
+func getNginxDeployment(functionGroupName string, functions []*WaafFunction) *appsv1.Deployment {
 	groupStack := fmt.Sprintf("%s-stack", functionGroupName)
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -70,7 +70,7 @@ func getNginxDeployment(functionGroupName string, functions []*waafFunction) *ap
 	return deployment
 }
 
-func getContainer(functions []*waafFunction) []apiv1.Container {
+func getContainer(functions []*WaafFunction) []apiv1.Container {
 	currentPort := 8001
 	container := []apiv1.Container{
 		{
@@ -95,14 +95,14 @@ func getContainer(functions []*waafFunction) []apiv1.Container {
 	}
 	s := "'["
 	for _, function := range functions {
-		function.port = strconv.Itoa(currentPort)
+		function.Port = strconv.Itoa(currentPort)
 		container = append(container, apiv1.Container{
-			Name:  function.name,
-			Image: function.image,
+			Name:  function.Name,
+			Image: function.Image,
 			Env: []apiv1.EnvVar{
 				{
 					Name:  "PORT",
-					Value: function.port,
+					Value: function.Port,
 				},
 			},
 		})

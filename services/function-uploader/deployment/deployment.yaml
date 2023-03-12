@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: waaf-services-uploader
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: waaf-services-uploader
+  template:
+    metadata:
+      labels:
+        app: waaf-services-uploader
+    spec:
+      containers:
+        - name: waaf-services-uploader
+          image: localhost:5001/waaf/services/uploader
+          ports:
+            - containerPort: 10004
+          securityContext:
+            capabilities:
+              add:
+                - CAP_SETGID
+                - CAP_SETUID
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: waaf-services-uploader-service
+spec:
+  ports:
+    - port: 10004
+  selector:
+    app: waaf-services-uploader
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: waaf-services-uploader-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/proxy-body-size: 8m
+spec:
+  rules:
+    - http:
+        paths:
+          - pathType: Prefix
+            path: /uploader(/|$)(.*)
+            backend:
+              service:
+                name: waaf-services-uploader-service
+                port:
+                  number: 10004
