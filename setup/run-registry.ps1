@@ -9,14 +9,26 @@ Write-Output "Creating local registry"
 docker run -d --restart=always -p "127.0.0.1:${reg_port}:5000" --name "${reg_name}" registry:2
 Write-Output "Local registry created"
 
+Write-Output "Create node image"
+$node_image = "kind-node-image-with-plugins:0.0.1"
+docker build -t ${node_image} .
+Write-Output "Created node image"
+
 $text = Get-Content ${registry_yaml} -Raw 
 $text = $text.Replace('${reg_name}', $reg_name)
 $text = $text.Replace('${reg_port}', $reg_port)
+$text = $text.Replace('${image}', $node_image)
 $text | Out-File -FilePath $temp_regestry_yaml
 
 Write-Output "Create kind cluster"
-kind create cluster --config ${temp_regestry_yaml} --image ghcr.io/liquid-reply/kind-crun-wasm:v1.23.0
-# kubectl create clusterrolebinding default-view --clusterrole=view --serviceaccount=default:default
+kind create cluster --config ${temp_regestry_yaml}
+
+helm repo add kwasm http://kwasm.sh/kwasm-operator/
+helm install -n kwasm --create-namespace kwasm-operator kwasm/kwasm-operator
+kubectl annotate node --all kwasm.sh/kwasm-node=true
+kubectl apply -f https://raw.githubusercontent.com/KWasm/kwasm-node-installer/main/example/test-job.yaml
+kubectl logs job/wasm-test --follow
+
 kubectl create clusterrolebinding serviceaccounts-cluster-admin --clusterrole=cluster-admin --group=system:serviceaccounts
 Write-Output "Kind cluster created"
 
