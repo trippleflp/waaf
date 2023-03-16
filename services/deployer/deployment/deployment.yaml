@@ -15,6 +15,7 @@ spec:
       containers:
         - name: waaf-services-deployer
           image: localhost:5001/waaf/services/deployer
+          imagePullPolicy: Always
           ports:
             - containerPort: 10003
 ---
@@ -34,6 +35,7 @@ metadata:
   name: waaf-services-deployer-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/proxy-body-size: 16m
 spec:
   rules:
     - http:

@@ -1,24 +1,33 @@
 package deployment
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-func TestMarshall(t *testing.T) {
-	f := []*waafFunction{
-		{
-			name:  "name",
-			image: "image",
-			port:  "port",
-		},
-	}
-	container := getContainer(f)
-	fmt.Println(container[0].Env[2].Value)
+//func TestMarshall(t *testing.T) {
+//	f := []*WaafFunction{
+//		{
+//			Name:  "Name",
+//			Image: "Image",
+//			Port:  "Port",
+//		},
+//	}
+//	container := getContainer(f)
+//	fmt.Println(container[0].Env[2].Value)
+//
+//	res, err := json.Marshal(f)
+//
+//	assert.NoError(t, err)
+//	fmt.Println(string(res))
+//}
 
-	res, err := json.Marshal(*(f[0]))
-	assert.NoError(t, err)
-	fmt.Println(string(res))
+func TestSmth(t *testing.T) {
+	f := &WaafFunction{
+		Name:  "name",
+		Image: "image",
+	}
+
+	getFunctionDeployment("fnName", f)
+	fmt.Printf("%v", f)
 }

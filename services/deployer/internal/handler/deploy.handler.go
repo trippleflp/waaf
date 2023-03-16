@@ -4,11 +4,27 @@ import (
 	"deployer/internal/deployment"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"github.com/rs/zerolog/log"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"strings"
 )
 
+type DeployHandlerBody struct {
+	Functions         []string `json:"functions"`
+	FunctionGroupName string   `json:"functionGroupName""`
+}
+
+const registryUrl = "localhost:5001"
+
 func DeployHandler(c *fiber.Ctx) error {
+	body := new(DeployHandlerBody)
+	err := c.BodyParser(body)
+	if err != nil {
+		log.Debug().Err(err).Str("body", string(c.Body())).Msg("Body parsing did not work")
+		return fiber.NewError(fiber.StatusBadRequest, "Body can't be parsed")
+	}
+
 	// creates the in-cluster config
 	config, err := rest.InClusterConfig()
 	if err != nil {
@@ -20,50 +36,31 @@ func DeployHandler(c *fiber.Ctx) error {
 		return err
 	}
 
-	deploymentManger, err := deployment.
+	deploymentMangerBuilder := deployment.
 		Builder(clientset).
 		SetContext(c.UserContext()).
-		SetFunctionGroupName("waaf").
-		SetFunctions("hello", "localhost:5001/hello-app:1.0").
-		Build()
+		SetFunctionGroupName(body.FunctionGroupName)
+
+	for _, fn := range body.Functions {
+		deploymentMangerBuilder.SetFunctions(strings.Split(fn, "/")[0], fmt.Sprintf("%s/%s", registryUrl, fn))
+	}
+	//deploymentMangerBuilder.SetFunctions("wasm-local", "localhost:5001/groupid/functionname:1.0.0")
+	//deploymentMangerBuilder.SetFunctions("wasi-example", "localhost:5001/wasi-example:latest")
+	deploymentManger, err := deploymentMangerBuilder.Build()
+	//	Build()
 
 	if err != nil {
+		log.Err(err)
 		return err
 	}
 
-	result, err := deploymentManger.DeployNginx()
+	err = deploymentManger.DeployAll()
 	if err != nil {
+		log.Err(err)
 		return err
 	}
 
-	res := fmt.Sprintf("Created deployment %q.\n", result.GetObjectMeta().GetName())
+	res := fmt.Sprintf("Created deployment of functiongroup: %s.\n", body.FunctionGroupName)
 	fmt.Println(res)
 	return c.SendString(res)
-	//
-	//for {
-	//	// get pods in all the namespaces by omitting namespace
-	//	// Or specify namespace to get pods in particular namespace
-	//	pods, err := clientset.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
-	//	if err != nil {
-	//		panic(err.Error())
-	//	}
-	//	fmt.Printf("There are %d pods in the cluster\n", len(pods.Items))
-	//
-	//	// Examples for error handling:
-	//	// - Use helper functions e.g. errors.IsNotFound()
-	//	// - And/or cast to StatusError and use its properties like e.g. ErrStatus.Message
-	//	_, err = clientset.CoreV1().Pods("default").Get(context.TODO(), "example-xxxxx", metav1.GetOptions{})
-	//	if errors.IsNotFound(err) {
-	//		fmt.Printf("Pod example-xxxxx not found in default namespace\n")
-	//	} else if statusError, isStatus := err.(*errors.StatusError); isStatus {
-	//		fmt.Printf("Error getting pod %v\n", statusError.ErrStatus.Message)
-	//	} else if err != nil {
-	//		panic(err.Error())
-	//	} else {
-	//		fmt.Printf("Found example-xxxxx pod in default namespace\n")
-	//	}
-	//
-	//	time.Sleep(10 * time.Second)
-	//}
-	//return nil
 }
