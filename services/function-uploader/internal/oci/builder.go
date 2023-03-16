@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type builder struct {
@@ -23,16 +24,8 @@ func Builder() *builder {
 }
 
 func (b *builder) SetFile(filePath string) *builder {
-	file, err := os.Open(filePath)
-	if err != nil {
-		b.err = err
-		return b
-	}
-	defer file.Close()
-	if b.err != nil {
-		return b
-	}
-	b.filename = file.Name()
+	b.filePath = filePath
+	b.filename = filepath.Base(filePath)
 	return b
 }
 
@@ -42,7 +35,7 @@ func (b *builder) SetRegistryUrl(url string) *builder {
 }
 
 func (b *builder) SetName(name string) *builder {
-	b.name = name
+	b.name = strings.ToLower(name)
 	return b
 }
 
@@ -51,19 +44,19 @@ func (b *builder) SetTag(tag string) *builder {
 	return b
 }
 
-func (b *builder) Build() error {
+func (b *builder) Build() (string, error) {
 	if b.err != nil {
-		return b.err
+		return "", b.err
 	}
 
-	tarPath, err := CreateTarball(filepath.Dir(b.filename), b.filename)
+	tarPath, err := CreateTarball(filepath.Dir(b.filePath), b.filePath)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	tarFile, err := os.Open(*tarPath)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer tarFile.Close()
 
@@ -78,7 +71,7 @@ func (b *builder) Build() error {
 	config := Config(b.filename, tarDigest)
 	configBytes, err := json.Marshal(config)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	configLayer := fileDetails{
@@ -88,24 +81,24 @@ func (b *builder) Build() error {
 	manifest := buildManifest(configLayer, layer)
 	manifestBytes, err := json.Marshal(manifest)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	log.Print("Pushing config")
 	err = b.pushBlob(configBytes, configLayer.digest)
 	if err != nil {
-		return err
+		return "", err
 	}
 	log.Print("Pushing layer")
 	err = b.pushBlob(tarBytes, layer.digest)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	log.Print("Pushing manifest")
-	err = b.pushManifest(manifestBytes)
+	location, err := b.pushManifest(manifestBytes)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return location, nil
 }

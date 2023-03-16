@@ -20,7 +20,7 @@ func main() {
 		Format: "[${ip}]:${port} ${status} - ${method} ${path}\n",
 	}))
 
-	app.Post("/", handler.UploadHandler)
+	app.Post("/:functionGroup/:functionName", handler.UploadHandler)
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "10004"

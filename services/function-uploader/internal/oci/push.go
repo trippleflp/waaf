@@ -54,10 +54,10 @@ func (b *builder) pushBlob(fileBytes []byte, digest digest.Digest) error {
 	return nil
 }
 
-func (b *builder) pushManifest(fileBytes []byte) error {
+func (b *builder) pushManifest(fileBytes []byte) (string, error) {
 	uri, err := url.Parse(fmt.Sprintf("%s/%s", b.registryURL, path.Join("v2", b.name, "manifests", b.tag)))
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	req := &http.Request{
@@ -73,13 +73,13 @@ func (b *builder) pushManifest(fileBytes []byte) error {
 	fmt.Printf("Calling: %s\n", req.URL)
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if res.StatusCode != 201 {
-		return errors.New("Status not 201 but " + res.Status)
+		return "", errors.New("Status not 201 but " + res.Status)
 	}
-	return nil
+	return res.Header.Get("Location"), nil
 }
 
 func (b *builder) obtainSessionId() (*string, error) {

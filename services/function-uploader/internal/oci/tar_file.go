@@ -2,7 +2,6 @@ package oci
 
 import (
 	"archive/tar"
-	"compress/gzip"
 	"errors"
 	"fmt"
 	"io"
@@ -18,10 +17,10 @@ func CreateTarball(tempDir string, filePath string) (*string, error) {
 	}
 	defer file.Close()
 
-	gzipWriter := gzip.NewWriter(file)
-	defer gzipWriter.Close()
+	//gzipWriter := gzip.NewWriter(file)
+	//defer gzipWriter.Close()
 
-	tarWriter := tar.NewWriter(gzipWriter)
+	tarWriter := tar.NewWriter(file)
 	defer tarWriter.Close()
 
 	err = addFileToTarWriter(filePath, tarWriter)
@@ -47,7 +46,7 @@ func addFileToTarWriter(filePath string, tarWriter *tar.Writer) error {
 	}
 
 	header := &tar.Header{
-		Name:    filePath,
+		Name:    filepath.Base(filePath),
 		Size:    stat.Size(),
 		Mode:    int64(stat.Mode()),
 		ModTime: stat.ModTime(),

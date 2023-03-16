@@ -11,7 +11,8 @@ import (
 )
 
 func UploadHandler(c *fiber.Ctx) error {
-
+	functionGroupId := c.Params("functionGroup")
+	functionName := c.Params("functionName")
 	file, err := c.FormFile("fileUpload")
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -23,7 +24,6 @@ func UploadHandler(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	//defer os.RemoveAll(temp)
 
 	fmt.Println("open file")
 	reader, err := file.Open()
@@ -43,22 +43,23 @@ func UploadHandler(c *fiber.Ctx) error {
 	wasmPath := filepath.Join(temp, wasmFileName)
 	fmt.Println("write file to ", wasmPath)
 
-	err = os.WriteFile(wasmPath, bytes, 0644)
+	err = os.WriteFile(wasmPath, bytes, 0777)
 	if err != nil {
+		log.Err(err)
 		return err
 	}
 
-	err = oci.Builder().
+	location, err := oci.Builder().
 		SetFile(wasmPath).
 		SetRegistryUrl("http://kind-registry:5000").
 		SetTag("1.0.0").
-		SetName("test/wasm_exec").
+		SetName(fmt.Sprintf("%s/%s", functionGroupId, functionName)).
 		Build()
 	if err != nil {
 		log.Err(err)
 		return err
 	}
 
-	return c.SendString(fmt.Sprintf("%s:%s", "test/wasm_exec", "1.0.0"))
+	return c.SendString(location)
 
 }

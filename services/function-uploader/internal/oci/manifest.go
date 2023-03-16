@@ -21,6 +21,7 @@ func buildManifest(config, layer fileDetails) v1.Manifest {
 			Size:      config.size,
 		},
 		Layers: []v1.Descriptor{{
+			//MediaType: v1.MediaTypeImageLayer,
 			MediaType: v1.MediaTypeImageLayer,
 			Digest:    layer.digest,
 			Size:      layer.size},
