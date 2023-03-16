@@ -42,12 +42,9 @@ func DeployHandler(c *fiber.Ctx) error {
 		SetFunctionGroupName(body.FunctionGroupName)
 
 	for _, fn := range body.Functions {
-		deploymentMangerBuilder.SetFunctions(strings.Split(fn, "/")[0], fmt.Sprintf("%s/%s", registryUrl, fn))
+		deploymentMangerBuilder.SetFunctions(strings.Split(strings.Split(fn, "/")[1], ":")[0], fmt.Sprintf("%s/%s", registryUrl, fn))
 	}
-	//deploymentMangerBuilder.SetFunctions("wasm-local", "localhost:5001/groupid/functionname:1.0.0")
-	//deploymentMangerBuilder.SetFunctions("wasi-example", "localhost:5001/wasi-example:latest")
 	deploymentManger, err := deploymentMangerBuilder.Build()
-	//	Build()
 
 	if err != nil {
 		log.Err(err)
