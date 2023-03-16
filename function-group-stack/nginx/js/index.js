@@ -37,11 +37,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 import jwt_decode from "jwt-decode";
 // Todo verify
 export function hello(r) {
-    var _a;
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
-        var jwt, token, function_data, functionName, port, res;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
+        var jwt, token, decoded, function_data, functionName, serviceName, namespace, serviceUri, res, body;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
                 case 0:
                     if (!r.headersIn.Authorization) {
                         r.log("No token provided");
@@ -50,21 +50,34 @@ export function hello(r) {
                     }
                     jwt = (_a = r.headersIn.Authorization) === null || _a === void 0 ? void 0 : _a.replace("Bearer ", "");
                     token = jwt_decode(jwt);
-                    r.log(r.variables.group_id);
                     r.log(r.variables.GROUP_ID);
                     if (r.variables.group_id !== token.aud) {
                         r.return(403, "You are not allowed to use this group.");
                     }
-                    function_data = JSON.parse(r.variables.function_data);
+                    decoded = atob(r.variables.function_data);
+                    function_data = JSON.parse(decoded);
                     functionName = r.uri.split("/").reverse()[0];
-                    port = function_data.find(function (f) { return f.name == functionName; });
-                    if (!port) {
+                    serviceName = (_b = function_data.find(function (f) { return f.name === functionName; })) === null || _b === void 0 ? void 0 : _b.service;
+                    if (!serviceName) {
                         r.return(404, "Not found");
+                        r.error(functionName + " does not exist");
+                        return [2 /*return*/];
                     }
-                    return [4 /*yield*/, r.subrequest("localhost:" + port)];
+                    namespace = r.variables.namespace;
+                    serviceUri = "http://" + serviceName + "." + namespace + ".svc.cluster.local:8080";
+                    r.log(r.requestText);
+                    r.log(r.requestBuffer);
+                    r.log(r.requestBody);
+                    r.log("mapping from " + r.uri + " to " + serviceUri);
+                    return [4 /*yield*/, ngx.fetch(serviceUri, { method: "POST", body: r.requestText })];
                 case 1:
-                    res = _b.sent();
-                    r.return(res.status, res.responseText);
+                    res = _c.sent();
+                    return [4 /*yield*/, res.text()];
+                case 2:
+                    body = _c.sent();
+                    r.log("Function " + functionName + " returned status " + res.status + " with body " + body);
+                    // const res = await r.subrequest(`http://localhost:${port}`);
+                    r.return(r.status, body);
                     return [2 /*return*/];
             }
         });
