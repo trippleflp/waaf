@@ -5,7 +5,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
-	lop "github.com/samber/lo/parallel"
 	"gitlab.informatik.hs-augsburg.de/flomon/waaf/libs/models"
 	"gitlab.informatik.hs-augsburg.de/flomon/waaf/services/api-gateway/graph/model"
 	"gitlab.informatik.hs-augsburg.de/flomon/waaf/services/function-group/internal/postgres"
@@ -46,26 +45,20 @@ func ListEntitledGroups(c *fiber.Ctx) error {
 	}
 	var functionGroups []*model.FunctionGroup
 
-	errValue, _ := lo.TryWithErrorValue(func() error {
-		functionGroups = lop.Map[string, *model.FunctionGroup](functionGroupIds, func(id string, index int) *model.FunctionGroup {
-			groupRaw, err := client.GetFunctionGroup(id, c.UserContext())
-			if err != nil {
-				panic(err)
-			}
-			group := model.FunctionGroup{
-				Name: groupRaw.Name,
-				ID:   groupRaw.Id,
-				UserIds: lo.Map[*postgres.FunctionGroupToUserRolePair, *string](groupRaw.Users, func(user *postgres.FunctionGroupToUserRolePair, index int) *string {
-					return &user.UserId
-				}),
-			}
-			return &group
+	for _, groupId := range functionGroupIds {
+		groupRaw, err := client.GetFunctionGroup(groupId, c.UserContext())
+		if err != nil {
+			log.Debug().Err(err).Str("body", string(c.Body())).Msg("Could not build function groupId model")
+			return fiber.NewError(fiber.StatusInternalServerError, "Could not build function groupId model")
+
+		}
+		functionGroups = append(functionGroups, &model.FunctionGroup{
+			Name: groupRaw.Name,
+			ID:   groupRaw.Id,
+			UserIds: lo.Map[*postgres.FunctionGroupToUserRolePair, *string](groupRaw.Users, func(user *postgres.FunctionGroupToUserRolePair, index int) *string {
+				return &user.UserId
+			}),
 		})
-		return nil
-	})
-	if errValue != nil {
-		log.Debug().Err(err).Str("body", string(c.Body())).Msg("Could not build function group model")
-		return fiber.NewError(fiber.StatusInternalServerError, "Could not build function group model")
 	}
 
 	responseData, err := json.Marshal(functionGroups)

@@ -15,7 +15,7 @@ import (
 	"github.com/go-chi/chi"
 )
 
-const defaultPort = "10003"
+const defaultPort = "8080"
 
 func main() {
 
@@ -31,7 +31,7 @@ func main() {
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &resolver.Resolver{}}))
 
-	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
+	router.Handle("/", playground.Handler("GraphQL playground", "/graphql/query"))
 	router.Handle("/query", srv)
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)

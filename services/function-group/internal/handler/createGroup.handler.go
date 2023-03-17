@@ -41,12 +41,12 @@ func CreateGroup(c *fiber.Ctx) error {
 		UserIds: []*string{
 			&body.UserId,
 		},
-		AllowedFunctionGroups: []*model.FunctionGroupID{
-			{
-				Name: body.Data.AllowedFunctionGroups[0].Name,
-				ID:   body.Data.AllowedFunctionGroups[0].ID,
-			},
-		},
+		//AllowedFunctionGroups: []*model.FunctionGroupID{
+		//	{
+		//		Name: body.Data.AllowedFunctionGroups[0].Name,
+		//		ID:   body.Data.AllowedFunctionGroups[0].ID,
+		//	},
+		//},
 	}
 
 	data, err := json.Marshal(responseData)

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"deployer/internal/deployment"
+	"deployer/model"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
@@ -10,15 +11,10 @@ import (
 	"strings"
 )
 
-type DeployHandlerBody struct {
-	Functions         []string `json:"functions"`
-	FunctionGroupName string   `json:"functionGroupName""`
-}
-
 const registryUrl = "localhost:5001"
 
 func DeployHandler(c *fiber.Ctx) error {
-	body := new(DeployHandlerBody)
+	body := new(model.DeployHandlerBody)
 	err := c.BodyParser(body)
 	if err != nil {
 		log.Debug().Err(err).Str("body", string(c.Body())).Msg("Body parsing did not work")
@@ -47,7 +43,7 @@ func DeployHandler(c *fiber.Ctx) error {
 	deploymentManger, err := deploymentMangerBuilder.Build()
 
 	if err != nil {
-		log.Err(err)
+		log.Err(err).Msg("Deployment failed")
 		return err
 	}
 

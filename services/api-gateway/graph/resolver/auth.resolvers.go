@@ -7,17 +7,26 @@ package resolver
 import (
 	"context"
 	"fmt"
+	"os"
 
 	req "github.com/imroc/req/v3"
 	"gitlab.informatik.hs-augsburg.de/flomon/waaf/services/api-gateway/graph/model"
 )
+
+var authenticationServiceUrl = func() string {
+	url, exist := os.LookupEnv("AUTHENTICATION_URL")
+	if !exist {
+		return "http://localhost:10002"
+	}
+	return url
+}()
 
 // Register is the resolver for the register field.
 func (r *mutationResolver) Register(ctx context.Context, input model.UserRegistrationData) (*model.Token, error) {
 	resp, err := req.R().
 		SetBody(input).
 		SetContentType("application/json").
-		Post("http://localhost:10002/register")
+		Post(fmt.Sprintf("%s/register", authenticationServiceUrl))
 
 	if err != nil {
 		return nil, err
@@ -36,7 +45,7 @@ func (r *queryResolver) Login(ctx context.Context, input model.UserLoginData) (*
 	resp, err := req.R().
 		SetBody(input).
 		SetContentType("application/json").
-		Post("http://localhost:10002/login")
+		Post(fmt.Sprintf("%s/login", authenticationServiceUrl))
 
 	if err != nil {
 		return nil, err

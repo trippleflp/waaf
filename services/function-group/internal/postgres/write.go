@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/uptrace/bun"
 	"gitlab.informatik.hs-augsburg.de/flomon/waaf/services/api-gateway/graph/model"
+	"strings"
 )
 
 func (c *PgConnection) CreateFunctionGroup(userId, groupName string, ctx context.Context) (*string, error) {
@@ -118,4 +119,20 @@ func (c *PgConnection) AddFunctionGroups(functionGroupIds []string, targetFuncti
 	}
 	return newlyAdded, alreadyAdded, notExist, nil
 
+}
+
+func (c *PgConnection) AddFunction(functionTag string, groupId string, ctx context.Context) error {
+	functionName := strings.Split(strings.Split(functionTag, "/")[1], ":")[0]
+	data := &Function{
+		FunctionGroupId: groupId,
+		FunctionTag:     functionTag,
+		Name:            functionName,
+	}
+
+	if _, err := c.db.NewInsert().
+		Model(data).
+		Exec(ctx); err != nil {
+		return err
+	}
+	return nil
 }

@@ -65,11 +65,22 @@ func (c *PgConnection) GetFunctionGroup(groupId string, ctx context.Context) (*F
 		Model(functionGroup).
 		Where("id = uuid(?)", groupId).
 		Relation("Users").
-		Relation("AllowedFunctionGroups").
+		Relation("Functions").
+		//Relation("AllowedFunctionGroups").
 		//Relation("AllowedFunctionGroups.ChildFunctionGroup").
 		Scan(ctx)
 
 	return functionGroup, err
+}
+
+func (c *PgConnection) GetFunctionGroupId(groupName string, ctx context.Context) (string, error) {
+	functionGroup := new(FunctionGroup)
+	err := c.db.NewSelect().
+		Model(functionGroup).
+		Where("name = ?", groupName).
+		Scan(ctx)
+
+	return functionGroup.Id, err
 }
 
 func (c *PgConnection) GetEntitledFunctionGroups(userId string, ctx context.Context) ([]string, error) {
@@ -79,6 +90,7 @@ func (c *PgConnection) GetEntitledFunctionGroups(userId string, ctx context.Cont
 		Where("id = uuid(?)", userId).
 		Relation("FunctionGroups").
 		Relation("FunctionGroups.FunctionGroup").
+		Relation("FunctionGroups.FunctionGroup.Functions").
 		Scan(ctx)
 	functionGroupIds := lo.Map[*FunctionGroupToUserRolePair, string](user.FunctionGroups, func(item *FunctionGroupToUserRolePair, index int) string {
 		return item.FunctionGroupId

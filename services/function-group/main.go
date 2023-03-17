@@ -23,10 +23,11 @@ func main() {
 
 	groupMiddleware := app.Group("/groups/:id")                 // done
 	groupMiddleware.Post("/", handler.GroupInfo)                // done
+	groupMiddleware.Post("/deploy", handler.Deploy)             // done
 	groupMiddleware.Post("/addUsers", handler.AddUsers)         // done
 	groupMiddleware.Post("/removeUsers", handler.RemoveUsers)   // done
 	groupMiddleware.Post("/editUserRole", handler.EditUserRole) // done
-	groupMiddleware.Post("/addFunctions", handler.AddFunctions)
+	groupMiddleware.Post("/addFunction", handler.AddFunction)   // done
 	groupMiddleware.Post("/addFunctionGroups", handler.AddFunctionGroups)
 	groupMiddleware.Post("/removeFunctions", handler.RemoveFunctions)
 	groupMiddleware.Post("/removeFunctionGroups", handler.RemoveFunctionGroups)
@@ -36,7 +37,7 @@ func main() {
 	app.Post("/createInternalToken", handler.CreateToken)
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "10001"
+		port = "8080"
 	}
 	postgres.GetConnection()
 

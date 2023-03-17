@@ -33,7 +33,7 @@ type FunctionGroup struct {
 }
 
 type Function struct {
-	FunctionId      string `bun:",type:uuid,pk"`
-	Name            string `bun:",unique"`
+	FunctionTag     string
+	Name            string `bun:",unique,pk"`
 	FunctionGroupId string `bun:"type:uuid"`
 }

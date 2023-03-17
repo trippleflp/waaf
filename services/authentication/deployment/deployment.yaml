@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: waaf
+  name: waaf-services-auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: waaf-services-auth
+  template:
+    metadata:
+      labels:
+        app: waaf-services-auth
+    spec:
+      containers:
+        - name: waaf-services-auth
+          image: localhost:5001/waaf/services/auth
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+        - name: postgres
+          image: postgres:15.1-alpine
+          env:
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: waaf
+  name: waaf-services-auth-service
+spec:
+  ports:
+    - port: 8080
+  selector:
+    app: waaf-services-auth

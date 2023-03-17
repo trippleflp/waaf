@@ -29,4 +29,6 @@ extend type Mutation {
     editUserRole(data: userRolePairInput!,  functionGroupId:ID!): FunctionGroup
 
     addFunctionGroups(functionGroupIds:[String!]!, targetFunctionGroupId: String!): FunctionGroup
+
+    triggerDeployment(functionGroupId: String!): String
 }

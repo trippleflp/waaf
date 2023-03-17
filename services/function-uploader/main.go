@@ -23,7 +23,7 @@ func main() {
 	app.Post("/:functionGroup/:functionName", handler.UploadHandler)
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "10004"
+		port = "8080"
 	}
 	log.Fatal().Err(app.Listen(fmt.Sprintf(":%v", port)))
 }

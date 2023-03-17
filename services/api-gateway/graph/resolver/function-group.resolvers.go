@@ -8,12 +8,21 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 
-	req "github.com/imroc/req/v3"
+	"github.com/imroc/req/v3"
 	"gitlab.informatik.hs-augsburg.de/flomon/waaf/libs/models"
 	"gitlab.informatik.hs-augsburg.de/flomon/waaf/services/api-gateway/auth"
 	"gitlab.informatik.hs-augsburg.de/flomon/waaf/services/api-gateway/graph/model"
 )
+
+var functionGroupServiceUrl = func() string {
+	url, exist := os.LookupEnv("FUNCTIONGROUP_URL")
+	if !exist {
+		return "http://localhost:10001"
+	}
+	return url
+}()
 
 // CreateFunctionGroup is the resolver for the createFunctionGroup field.
 func (r *mutationResolver) CreateFunctionGroup(ctx context.Context, input model.CreateFunctionGroupInput) (*model.FunctionGroup, error) {
@@ -33,7 +42,7 @@ func (r *mutationResolver) CreateFunctionGroup(ctx context.Context, input model.
 		SetBody(bodyBytes).
 		SetResult(&responseData).
 		SetContentType("application/json").
-		Post("http://localhost:10001/create")
+		Post(fmt.Sprintf("%s/create", functionGroupServiceUrl))
 
 	if err != nil {
 		return nil, err
@@ -65,7 +74,7 @@ func (r *mutationResolver) AddUserToFunctionGroup(ctx context.Context, users []*
 		SetBody(bodyBytes).
 		SetResult(&responseData).
 		SetContentType("application/json").
-		Post(fmt.Sprintf("http://localhost:10001/groups/%s/addUsers", functionGroupID))
+		Post(fmt.Sprintf("%s/groups/%s/addUsers", functionGroupServiceUrl, functionGroupID))
 
 	if err != nil {
 		return nil, err
@@ -97,7 +106,7 @@ func (r *mutationResolver) RemoveUserFromFunctionGroup(ctx context.Context, user
 		SetBody(bodyBytes).
 		SetResult(&responseData).
 		SetContentType("application/json").
-		Post(fmt.Sprintf("http://localhost:10001/groups/%s/removeUsers", functionGroupID))
+		Post(fmt.Sprintf("%s/groups/%s/removeUsers", functionGroupServiceUrl, functionGroupID))
 
 	if err != nil {
 		return nil, err
@@ -129,7 +138,7 @@ func (r *mutationResolver) EditUserRole(ctx context.Context, data model.UserRole
 		SetBody(bodyBytes).
 		SetResult(&responseData).
 		SetContentType("application/json").
-		Post(fmt.Sprintf("http://localhost:10001/groups/%s/editUserRole", functionGroupID))
+		Post(fmt.Sprintf("%s/groups/%s/editUserRole", functionGroupServiceUrl, functionGroupID))
 
 	if err != nil {
 		return nil, err
@@ -161,7 +170,7 @@ func (r *mutationResolver) AddFunctionGroups(ctx context.Context, functionGroupI
 		SetBody(bodyBytes).
 		SetResult(&responseData).
 		SetContentType("application/json").
-		Post(fmt.Sprintf("http://localhost:10001/groups/%s/addFunctionGroups", targetFunctionGroupID))
+		Post(fmt.Sprintf("%s/groups/%s/addFunctionGroups", functionGroupServiceUrl, targetFunctionGroupID))
 
 	if err != nil {
 		return nil, err
@@ -171,6 +180,34 @@ func (r *mutationResolver) AddFunctionGroups(ctx context.Context, functionGroupI
 	}
 	if resp.IsSuccess() {
 		return &responseData, nil
+	}
+	return nil, fmt.Errorf("got unexpected response, raw dump:\n%s", resp.Dump())
+}
+
+// TriggerDeployment is the resolver for the triggerDeployment field.
+func (r *mutationResolver) TriggerDeployment(ctx context.Context, functionGroupID string) (*string, error) {
+	userId := auth.UserId(ctx)
+	if userId == nil {
+		return nil, fmt.Errorf("no valid authtoken was provided")
+	}
+
+	body := models.UserIdWrapper[any]{
+		UserId: *userId,
+		Data:   nil,
+	}
+	resp, err := req.R().
+		SetBody(body).
+		Post(fmt.Sprintf("%s/groups/%s/deploy", functionGroupServiceUrl, functionGroupID))
+
+	if err != nil {
+		return nil, err
+	}
+	if resp.IsError() {
+		return nil, fmt.Errorf("%s", resp.String())
+	}
+	if resp.IsSuccess() {
+		successMSg := "Deployment is triggered"
+		return &successMSg, nil
 	}
 	return nil, fmt.Errorf("got unexpected response, raw dump:\n%s", resp.Dump())
 }
@@ -190,7 +227,7 @@ func (r *queryResolver) ListEntitledGroups(ctx context.Context) ([]*model.Functi
 	resp, err := req.R().
 		SetBody(body).
 		SetResult(&result).
-		Post("http://localhost:10001/list")
+		Post(fmt.Sprintf("%s/list", functionGroupServiceUrl))
 
 	if err != nil {
 		return nil, err
@@ -222,7 +259,7 @@ func (r *queryResolver) GetFunctionGroup(ctx context.Context, functionGroupID st
 		SetBody(bodyBytes).
 		SetResult(&responseData).
 		SetContentType("application/json").
-		Post(fmt.Sprintf("http://localhost:10001/groups/%s", functionGroupID))
+		Post(fmt.Sprintf("%s/groups/%s", functionGroupServiceUrl, functionGroupID))
 
 	if err != nil {
 		return nil, err

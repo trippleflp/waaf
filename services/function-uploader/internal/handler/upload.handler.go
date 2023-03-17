@@ -4,14 +4,20 @@ import (
 	"fmt"
 	"function-uploader/internal/oci"
 	"github.com/gofiber/fiber/v2"
+	"github.com/imroc/req/v3"
 	"github.com/rs/zerolog/log"
 	"io"
 	"os"
 	"path/filepath"
 )
 
+type AddFunctionBody struct {
+	FunctionGroupName string `json:"functionGroupName"`
+	FunctionTag       string `json:"functionTag"`
+}
+
 func UploadHandler(c *fiber.Ctx) error {
-	functionGroupId := c.Params("functionGroup")
+	functionGroupName := c.Params("functionGroup")
 	functionName := c.Params("functionName")
 	file, err := c.FormFile("fileUpload")
 	if err != nil {
@@ -49,17 +55,35 @@ func UploadHandler(c *fiber.Ctx) error {
 		return err
 	}
 
-	location, err := oci.Builder().
+	image, err := oci.Builder().
 		SetFile(wasmPath).
 		SetRegistryUrl("http://kind-registry:5000").
-		SetTag("1.0.0").
-		SetName(fmt.Sprintf("%s/%s", functionGroupId, functionName)).
+		SetTag("latest").
+		SetName(fmt.Sprintf("%s/%s", functionGroupName, functionName)).
 		Build()
 	if err != nil {
 		log.Err(err)
 		return err
 	}
 
-	return c.SendString(location)
+	url, exist := os.LookupEnv("FUNCTIONGROUP_URL")
+	if !exist {
+		return fmt.Errorf("function group url not set")
+	}
+
+	body := &AddFunctionBody{
+		FunctionGroupName: functionGroupName,
+		FunctionTag:       image,
+	}
+
+	response, err := req.R().SetBody(body).Post(fmt.Sprintf("%s/groups/%s/addFunction", url, functionGroupName))
+	if err != nil {
+		return err
+	}
+	if response.StatusCode != 200 {
+		return fmt.Errorf("function upload failed")
+	}
+
+	return c.SendString("function upload was successfully")
 
 }

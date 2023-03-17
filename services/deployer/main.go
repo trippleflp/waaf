@@ -23,7 +23,7 @@ func main() {
 	app.Post("/", handler.DeployHandler)
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "10003"
+		port = "8080"
 	}
 	log.Fatal().Err(app.Listen(fmt.Sprintf(":%v", port)))
 }

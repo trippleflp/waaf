@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: waaf
+  name: waaf-services-fn-group
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: waaf-services-fn-group
+  template:
+    metadata:
+      labels:
+        app: waaf-services-fn-group
+    spec:
+      containers:
+        - name: waaf-services-fn-group
+          image: localhost:5001/waaf/services/fn-group
+          imagePullPolicy: Always
+          env:
+            - name: DEPLOYER_URL
+              value: http://waaf-services-deployer-service.waaf.svc.cluster.local:8080
+          ports:
+            - containerPort: 8080
+        - name: postgres
+          image: postgres:15.1-alpine
+          env:
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: waaf
+  name: waaf-services-fn-group-service
+spec:
+  ports:
+    - port: 8080
+  selector:
+    app: waaf-services-fn-group

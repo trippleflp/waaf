@@ -2,6 +2,7 @@ package oci
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/opencontainers/go-digest"
 	"github.com/rs/zerolog/log"
 	"io"
@@ -96,9 +97,9 @@ func (b *builder) Build() (string, error) {
 	}
 
 	log.Print("Pushing manifest")
-	location, err := b.pushManifest(manifestBytes)
+	_, err = b.pushManifest(manifestBytes)
 	if err != nil {
 		return "", err
 	}
-	return location, nil
+	return fmt.Sprintf("%s:%s", b.name, b.tag), nil
 }

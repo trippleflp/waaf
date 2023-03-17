@@ -63,6 +63,7 @@ type ComplexityRoot struct {
 		EditUserRole                func(childComplexity int, data model.UserRolePairInput, functionGroupID string) int
 		Register                    func(childComplexity int, input model.UserRegistrationData) int
 		RemoveUserFromFunctionGroup func(childComplexity int, userIds []string, functionGroupID string) int
+		TriggerDeployment           func(childComplexity int, functionGroupID string) int
 	}
 
 	Query struct {
@@ -88,6 +89,7 @@ type MutationResolver interface {
 	RemoveUserFromFunctionGroup(ctx context.Context, userIds []string, functionGroupID string) (*model.FunctionGroup, error)
 	EditUserRole(ctx context.Context, data model.UserRolePairInput, functionGroupID string) (*model.FunctionGroup, error)
 	AddFunctionGroups(ctx context.Context, functionGroupIds []string, targetFunctionGroupID string) (*model.FunctionGroup, error)
+	TriggerDeployment(ctx context.Context, functionGroupID string) (*string, error)
 }
 type QueryResolver interface {
 	Login(ctx context.Context, input model.UserLoginData) (*model.Token, error)
@@ -223,6 +225,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.RemoveUserFromFunctionGroup(childComplexity, args["userIds"].([]string), args["functionGroupId"].(string)), true
+
+	case "Mutation.triggerDeployment":
+		if e.complexity.Mutation.TriggerDeployment == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_triggerDeployment_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.TriggerDeployment(childComplexity, args["functionGroupId"].(string)), true
 
 	case "Query.getFunctionGroup":
 		if e.complexity.Query.GetFunctionGroup == nil {
@@ -405,6 +419,8 @@ extend type Mutation {
     editUserRole(data: userRolePairInput!,  functionGroupId:ID!): FunctionGroup
 
     addFunctionGroups(functionGroupIds:[String!]!, targetFunctionGroupId: String!): FunctionGroup
+
+    triggerDeployment(functionGroupId: String!): String
 }
 `, BuiltIn: false},
 	{Name: "../schema/models.graphqls", Input: `type User {
@@ -556,6 +572,21 @@ func (ec *executionContext) field_Mutation_removeUserFromFunctionGroup_args(ctx 
 		}
 	}
 	args["functionGroupId"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_triggerDeployment_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["functionGroupId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("functionGroupId"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["functionGroupId"] = arg0
 	return args, nil
 }
 
@@ -1269,6 +1300,58 @@ func (ec *executionContext) fieldContext_Mutation_addFunctionGroups(ctx context.
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_addFunctionGroups_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_triggerDeployment(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_triggerDeployment(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().TriggerDeployment(rctx, fc.Args["functionGroupId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_triggerDeployment(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_triggerDeployment_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -3816,6 +3899,12 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_addFunctionGroups(ctx, field)
+			})
+
+		case "triggerDeployment":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_triggerDeployment(ctx, field)
 			})
 
 		default:
