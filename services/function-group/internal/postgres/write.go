@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/uptrace/bun"
 	"gitlab.informatik.hs-augsburg.de/flomon/waaf/services/api-gateway/graph/model"
@@ -127,6 +128,7 @@ func (c *PgConnection) AddFunction(functionTag string, groupId string, ctx conte
 		FunctionGroupId: groupId,
 		FunctionTag:     functionTag,
 		Name:            functionName,
+		Id:              fmt.Sprintf("%s/%s", groupId, functionName),
 	}
 
 	if _, err := c.db.NewInsert().

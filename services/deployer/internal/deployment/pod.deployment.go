@@ -10,7 +10,7 @@ import (
 	"k8s.io/utils/pointer"
 )
 
-func getNginxDeployment(functionGroupName string, functions []*WaafFunction, namespace string) []*appsv1.Deployment {
+func getNginxDeployment(functionGroupName string, functions []*WaafFunction, namespace string, tempToken string) []*appsv1.Deployment {
 	var functionDeployments []*appsv1.Deployment
 
 	for _, function := range functions {
@@ -57,10 +57,10 @@ func getNginxDeployment(functionGroupName string, functions []*WaafFunction, nam
 								},
 							},
 							Env: []apiv1.EnvVar{
-								{Name: "GROUP_ID", Value: "some_random_uuid"},
 								{Name: "NGINX_ENVSUBST_OUTPUT_DIR", Value: "/etc/nginx"},
 								{Name: "FUNCTION_DATA", Value: base64.StdEncoding.EncodeToString(servicesBytes)},
 								{Name: "NAMESPACE", Value: namespace},
+								{Name: "TEMP_TOKEN", Value: tempToken},
 							},
 							VolumeMounts: []apiv1.VolumeMount{
 								{Name: "log", MountPath: "/var/log/nginx"},

@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/gofiber/fiber/v2 v2.41.0
+	github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/google/uuid v1.3.0
 	github.com/imroc/req/v3 v3.30.0
 	github.com/rs/zerolog v1.28.0
@@ -12,6 +13,7 @@ require (
 	github.com/uptrace/bun/dialect/pgdialect v1.1.10
 	github.com/uptrace/bun/driver/pgdriver v1.1.10
 	gitlab.informatik.hs-augsburg.de/flomon/waaf/libs/models v0.0.0
+	gitlab.informatik.hs-augsburg.de/flomon/waaf/libs/token v0.0.0
 	gitlab.informatik.hs-augsburg.de/flomon/waaf/services/api-gateway v0.0.0
 	gitlab.informatik.hs-augsburg.de/flomon/waaf/services/deployer v0.0.0
 )

@@ -7,26 +7,18 @@ package resolver
 import (
 	"context"
 	"fmt"
-	"os"
-
 	req "github.com/imroc/req/v3"
 	"gitlab.informatik.hs-augsburg.de/flomon/waaf/services/api-gateway/graph/model"
-)
 
-var authenticationServiceUrl = func() string {
-	url, exist := os.LookupEnv("AUTHENTICATION_URL")
-	if !exist {
-		return "http://localhost:10002"
-	}
-	return url
-}()
+	. "gitlab.informatik.hs-augsburg.de/flomon/waaf/services/api-gateway/graph/utils"
+)
 
 // Register is the resolver for the register field.
 func (r *mutationResolver) Register(ctx context.Context, input model.UserRegistrationData) (*model.Token, error) {
 	resp, err := req.R().
 		SetBody(input).
 		SetContentType("application/json").
-		Post(fmt.Sprintf("%s/register", authenticationServiceUrl))
+		Post(fmt.Sprintf("%s/register", AuthenticationServiceUrl))
 
 	if err != nil {
 		return nil, err
@@ -45,7 +37,7 @@ func (r *queryResolver) Login(ctx context.Context, input model.UserLoginData) (*
 	resp, err := req.R().
 		SetBody(input).
 		SetContentType("application/json").
-		Post(fmt.Sprintf("%s/login", authenticationServiceUrl))
+		Post(fmt.Sprintf("%s/login", AuthenticationServiceUrl))
 
 	if err != nil {
 		return nil, err
@@ -58,3 +50,10 @@ func (r *queryResolver) Login(ctx context.Context, input model.UserLoginData) (*
 	}
 	return nil, fmt.Errorf("got unexpected response, raw dump:\n%s", resp.Dump())
 }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//     it when you're done.
+//   - You have helper methods in this file. Move them out to keep these resolver files clean.

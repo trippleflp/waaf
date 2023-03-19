@@ -177,8 +177,11 @@ function hello(r) {
 
           jwt = (_a = r.headersIn.Authorization) === null || _a === void 0 ? void 0 : _a.replace("Bearer ", "");
           token = o(jwt);
-          r.log(r.variables.GROUP_ID);
-          if (r.variables.group_id !== token.aud) {
+          r.log("Token: " + JSON.stringify(token));
+          r.log("Temp token: " + r.variables.temp_token);
+          if (!token.tempTokens || !token.tempTokens.find(function (h) {
+            return h === r.variables.temp_token;
+          })) {
             r["return"](403, "You are not allowed to use this group.");
           }
           decoded = atob(r.variables.function_data);
@@ -195,9 +198,6 @@ function hello(r) {
 
           namespace = r.variables.namespace;
           serviceUri = "http://" + serviceName + "." + namespace + ".svc.cluster.local:8080";
-          r.log(r.requestText);
-          r.log(r.requestBuffer);
-          r.log(r.requestBody);
           r.log("mapping from " + r.uri + " to " + serviceUri);
           return [4 /*yield*/, ngx.fetch(serviceUri, {
             method: "POST",
@@ -209,7 +209,6 @@ function hello(r) {
         case 2:
           body = _c.sent();
           r.log("Function " + functionName + " returned status " + res.status + " with body " + body);
-          // const res = await r.subrequest(`http://localhost:${port}`);
           r["return"](r.status, body);
           return [2 /*return*/];
       }

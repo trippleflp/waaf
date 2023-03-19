@@ -35,7 +35,8 @@ func DeployHandler(c *fiber.Ctx) error {
 	deploymentMangerBuilder := deployment.
 		Builder(clientset).
 		SetContext(c.UserContext()).
-		SetFunctionGroupName(body.FunctionGroupName)
+		SetFunctionGroupName(body.FunctionGroupName).
+		SetTempToken(body.FunctionTempToken)
 
 	for _, fn := range body.Functions {
 		deploymentMangerBuilder.SetFunctions(strings.Split(strings.Split(fn, "/")[1], ":")[0], fmt.Sprintf("%s/%s", registryUrl, fn))

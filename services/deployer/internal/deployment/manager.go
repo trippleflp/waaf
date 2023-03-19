@@ -32,9 +32,10 @@ type manager struct {
 	ctx               context.Context
 	functions         []*WaafFunction
 	namespace         string
+	tempToken         string
 }
 
-func getManager(client kubernetes.Clientset, name string, ctx context.Context, functions []*WaafFunction) (*manager, error) {
+func getManager(client kubernetes.Clientset, name string, ctx context.Context, functions []*WaafFunction, tempToken string) (*manager, error) {
 	namespace := createNamespace(client, name, ctx)
 
 	configMap, err := client.CoreV1().ConfigMaps("waaf").Get(ctx, "nginx-stack-config", metav1.GetOptions{})
@@ -70,6 +71,7 @@ func getManager(client kubernetes.Clientset, name string, ctx context.Context, f
 		ctx:               ctx,
 		functions:         functions,
 		namespace:         namespace,
+		tempToken:         tempToken,
 	}
 	return &m, nil
 }
@@ -124,7 +126,7 @@ func createNamespace(clientset kubernetes.Clientset, name string, ctx context.Co
 }
 
 func (m *manager) DeployPod() error {
-	for _, deployment := range getNginxDeployment(m.functionGroupName, m.functions, m.namespace) {
+	for _, deployment := range getNginxDeployment(m.functionGroupName, m.functions, m.namespace, m.tempToken) {
 		log.Printf("deploying pod: %s", deployment.Name)
 
 		result, err := m.deploymentClient.Create(m.ctx, deployment, metav1.CreateOptions{})

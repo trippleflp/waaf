@@ -40,11 +40,18 @@ func Deploy(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, "Database query failed")
 	}
 
+	tempToken, err := client.GetFunctionGroupHash(functionGroupId, c.UserContext())
+	if err != nil {
+		log.Debug().Err(err).Str("body", string(c.Body())).Msg("Database query failed")
+		return fiber.NewError(fiber.StatusInternalServerError, "Database query failed")
+	}
+
 	b := &deployer.DeployHandlerBody{
 		Functions: lo.Map[*postgres.Function, string](group.Functions, func(item *postgres.Function, index int) string {
 			return item.FunctionTag
 		}),
 		FunctionGroupName: group.Name,
+		FunctionTempToken: *tempToken,
 	}
 
 	url, exists := os.LookupEnv("DEPLOYER_URL")

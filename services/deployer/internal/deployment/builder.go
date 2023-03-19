@@ -11,6 +11,7 @@ type deploymentBuilder struct {
 	name      *string
 	ctx       context.Context
 	functions []*WaafFunction
+	tempToken *string
 }
 
 func Builder(client *kubernetes.Clientset) *deploymentBuilder {
@@ -24,6 +25,11 @@ func (d *deploymentBuilder) SetFunctionGroupName(name string) *deploymentBuilder
 }
 func (d *deploymentBuilder) SetContext(ctx context.Context) *deploymentBuilder {
 	d.ctx = ctx
+	return d
+}
+
+func (d *deploymentBuilder) SetTempToken(tempToken string) *deploymentBuilder {
+	d.tempToken = &tempToken
 	return d
 }
 
@@ -44,9 +50,12 @@ func (d *deploymentBuilder) Build() (*manager, error) {
 	if d.name == nil {
 		return nil, fmt.Errorf("function group Name was not provided")
 	}
+	if d.tempToken == nil {
+		return nil, fmt.Errorf("temp token was not provided")
+	}
 	if d.ctx == nil {
 		d.ctx = context.Background()
 	}
 
-	return getManager(*d.client, *d.name, d.ctx, d.functions)
+	return getManager(*d.client, *d.name, d.ctx, d.functions, *d.tempToken)
 }

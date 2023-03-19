@@ -1,5 +1,9 @@
 import jwt_decode, {JwtPayload} from "jwt-decode";
 
+interface WaafJwtPayload extends JwtPayload{
+    tempTokens?: string[]
+}
+
 // Todo verify
 export async function hello(r: NginxHTTPRequest) {
     if (!r.headersIn.Authorization) {
@@ -10,10 +14,10 @@ export async function hello(r: NginxHTTPRequest) {
 
     const jwt = r.headersIn.Authorization?.replace("Bearer ", "");
 
-    const token = jwt_decode<JwtPayload>(jwt);
-
-    r.log(r.variables.GROUP_ID as NjsStringOrBuffer);
-    if (r.variables.group_id !== token.aud) {
+    const token = jwt_decode<WaafJwtPayload>(jwt);
+    r.log("Token: " +JSON.stringify(token))
+    r.log("Temp token: " + r.variables.temp_token as NjsStringOrBuffer);
+    if (!token.tempTokens || !(token.tempTokens).find(h => h === r.variables.temp_token)) {
         r.return(403, "You are not allowed to use this group.");
     }
 

@@ -2,6 +2,9 @@ package postgres
 
 import (
 	"context"
+	"crypto/sha1"
+	"encoding/hex"
+	"encoding/json"
 	"github.com/samber/lo"
 	"github.com/uptrace/bun"
 	"gitlab.informatik.hs-augsburg.de/flomon/waaf/services/api-gateway/graph/model"
@@ -96,4 +99,25 @@ func (c *PgConnection) GetEntitledFunctionGroups(userId string, ctx context.Cont
 		return item.FunctionGroupId
 	})
 	return functionGroupIds, err
+}
+
+func (c *PgConnection) GetFunctionGroupHash(groupId string, ctx context.Context) (*string, error) {
+	functionGroup := new(FunctionGroup)
+	err := c.db.NewSelect().
+		Model(functionGroup).
+		Where("id = uuid(?)", groupId).
+		Relation("Users").
+		Relation("Functions").
+		Scan(ctx)
+
+	bytes, err := json.Marshal(functionGroup)
+	if err != nil {
+		return nil, err
+	}
+
+	h := sha1.New()
+	h.Write(bytes)
+	sha1Hash := hex.EncodeToString(h.Sum(nil))
+
+	return &sha1Hash, err
 }

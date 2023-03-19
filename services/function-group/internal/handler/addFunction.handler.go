@@ -32,7 +32,7 @@ func AddFunction(c *fiber.Ctx) error {
 		log.Debug().Err(err).Str("body", string(c.Body())).Msg("FunctionGroup does not exist")
 		return fiber.NewError(fiber.StatusBadRequest, "FunctionGroup does not exist")
 	}
-	err = client.AddFunction(body.FunctionTag, id, c.UserContext())
+	err = client.AddOrUpdateFunction(body.FunctionTag, id, c.UserContext())
 	if err != nil {
 		log.Debug().Err(err).Str("body", string(c.Body())).Msg("Function adding failed")
 		return fiber.NewError(fiber.StatusInternalServerError, "Function adding failed")

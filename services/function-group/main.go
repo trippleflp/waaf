@@ -34,7 +34,7 @@ func main() {
 
 	app.Post("/list", handler.ListEntitledGroups) // done
 	app.Post("/create", handler.CreateGroup)      // done
-	app.Post("/createInternalToken", handler.CreateToken)
+	app.Post("/token", handler.CreateToken)
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
