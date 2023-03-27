@@ -9,10 +9,10 @@ Write-Output "Creating local registry"
 docker run -d --restart=always -p "127.0.0.1:${reg_port}:5000" --name "${reg_name}" registry:2
 Write-Output "Local registry created"
 
-Write-Output "Create node image"
-$node_image = "kind-node-image-with-plugins:0.0.1"
-docker build -t ${node_image} .
-Write-Output "Created node image"
+# Write-Output "Create node image"
+# $node_image = "kind-node-image-with-plugins:0.0.1"
+# docker build -t ${node_image} .
+# Write-Output "Created node image"
 
 $text = Get-Content ${registry_yaml} -Raw 
 $text = $text.Replace('${reg_name}', $reg_name)
