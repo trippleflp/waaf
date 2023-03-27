@@ -1,0 +1,18 @@
+[package]
+name = "waaf"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "waaf"
+path = "lib/lib.rs"
+#crate-type =["cdylib"]
+
+[dependencies]
+derivative = "2.2.0"
+http = "0.2.8"
+httpcodec = "0.2.3"
+bytecodec = "0.4.15"
+wasmedge_wasi_socket = "0.4.3"
+serde_json = "1.0.85"
