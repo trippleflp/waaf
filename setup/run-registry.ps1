@@ -30,6 +30,8 @@ kubectl apply -f https://raw.githubusercontent.com/KWasm/kwasm-node-installer/ma
 kubectl logs job/wasm-test --follow
 
 kubectl create clusterrolebinding serviceaccounts-cluster-admin --clusterrole=cluster-admin --group=system:serviceaccounts
+
+kubectl apply -k .
 Write-Output "Kind cluster created"
 
 Write-Output "Connect registry to cluster"

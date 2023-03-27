@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: wasm-test
+  annotations:
+    module.wasm.image/variant: compat-smart
+spec:
+  containers:
+    - image: hydai/wasm-wasi-example:with-wasm-annotation
+      name: wasm-test
+      resources: {}
+  restartPolicy: Never
+  runtimeClassName: crun
