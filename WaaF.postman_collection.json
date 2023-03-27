@@ -14,6 +14,15 @@
 					"request": {
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"user\",\r\n    \"password\": \"password\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
 							"raw": "localhost:8000/login",
 							"host": [
@@ -79,9 +88,38 @@
 			"item": [
 				{
 					"name": "test",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJhdWQiOiJzb21lX3JhbmRvbV91dWlkIn0.nk5j_oUA2kh4P9RhDUjh8ECdYpHitRCMyrL4bCrYffA",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
-						"header": []
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "dsa"
+						},
+						"url": {
+							"raw": "localhost/waaf/fn/gruppe/sum",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"waaf",
+								"fn",
+								"gruppe",
+								"sum"
+							]
+						}
 					},
 					"response": []
 				}
@@ -97,7 +135,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"functions\": [\"test-group/sum:latest\"],\r\n    \"functionGroupName\": \"waaf\"\r\n}",
+							"raw": "{\r\n    \"functions\": [\"waaf/sum:1.0.0\"],\r\n    \"functionGroupName\": \"waaf\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -197,7 +235,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:5001/v2/test-group/sum/manifests/1.0.0",
+							"raw": "http://localhost:5001/v2/hello-app/manifests/1.0",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -205,10 +243,9 @@
 							"port": "5001",
 							"path": [
 								"v2",
-								"test-group",
-								"sum",
+								"hello-app",
 								"manifests",
-								"1.0.0"
+								"1.0"
 							]
 						}
 					},
@@ -218,7 +255,22 @@
 					"name": "http://localhost:5001/v2/wasm-test/manifests/latest Copy",
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5001/v2/test-group/sum/blobs/sha256:826e06b3e74dc678737a6fbad410cf53e61ff9cd5e741782a4353f5fd2e8d97f",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"v2",
+								"test-group",
+								"sum",
+								"blobs",
+								"sha256:826e06b3e74dc678737a6fbad410cf53e61ff9cd5e741782a4353f5fd2e8d97f"
+							]
+						}
 					},
 					"response": []
 				},
@@ -226,7 +278,21 @@
 					"name": "http://localhost:5001/v2/wasm-test/manifests/latest Copy",
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5001/v2/test/blobs/sha256:f01d958e41d24720100506e706c9af6323acec5b11a7adb5008e009daf3b8873",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"v2",
+								"test",
+								"blobs",
+								"sha256:f01d958e41d24720100506e706c9af6323acec5b11a7adb5008e009daf3b8873"
+							]
+						}
 					},
 					"response": []
 				},
@@ -247,19 +313,19 @@
 								{
 									"key": "fileUpload",
 									"type": "file",
-									"src": "/C:/Users/flori/Documents/Data/Studium/master/master-thesis/waaf/services/function-uploader/testfiles/wasi_example_main.wasm"
+									"src": "/C:/Users/flori/Documents/Data/Studium/master/master-thesis/waaf/benchmarks/wasm/hello-world/target/wasm32-wasi/release/hello-world.wasm"
 								}
 							]
 						},
 						"url": {
-							"raw": "localhost/uploader/test-group/sum",
+							"raw": "localhost/uploader/waaf-benchmark/helloworld",
 							"host": [
 								"localhost"
 							],
 							"path": [
 								"uploader",
-								"test-group",
-								"sum"
+								"waaf-benchmark",
+								"helloworld"
 							]
 						}
 					},
@@ -282,7 +348,7 @@
 								{
 									"key": "fileUpload",
 									"type": "file",
-									"src": "/C:/Users/flori/Documents/Data/Studium/master/master-thesis/waaf/services/function-uploader/testfiles/wasi_example_main.wasm"
+									"src": "/C:/Users/flori/Documents/Data/Studium/master/master-thesis/core-functions/functions/test/target/wasm32-wasi/release/http_server.wasm"
 								}
 							]
 						},
@@ -302,9 +368,38 @@
 				},
 				{
 					"name": "http://kind-registry:5000/v2/groupID/functionName/blobs/uploads/",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.oci.image.manifest.v1+json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/vnd.oci.image.manifest.v1+json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "asd"
+						},
+						"url": {
+							"raw": "http://localhost:8080/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								""
+							]
+						}
 					},
 					"response": []
 				},
@@ -350,16 +445,70 @@
 				{
 					"name": "AddFunction",
 					"request": {
-						"method": "GET",
-						"header": []
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"functionGroupName\": \"gruppe\",\r\n    \"functionTag\": \"gruppe/sum:latest\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8080/groups/lol/addFunction",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8080",
+							"path": [
+								"groups",
+								"lol",
+								"addFunction"
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "New Request",
 					"request": {
-						"method": "GET",
-						"header": []
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"userId\": \"4535e462-f008-4bc9-b63f-7936832b4be2\",\r\n    \"data\": {\r\n        \"groupName\": \"gruppe\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8080/create",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8080",
+							"path": [
+								"create"
+							]
+						}
 					},
 					"response": []
 				},
