@@ -125,6 +125,11 @@ func createNamespace(clientset kubernetes.Clientset, name string, ctx context.Co
 	return ns
 }
 
+func (m *manager) DeployNetworkPolicy() error {
+	_, err := m.client.NetworkingV1().NetworkPolicies(m.namespace).Create(m.ctx, getNetworkPolicyDeployment(m.namespace), metav1.CreateOptions{})
+	return err
+}
+
 func (m *manager) DeployPod() error {
 	for _, deployment := range getNginxDeployment(m.functionGroupName, m.functions, m.namespace, m.tempToken) {
 		log.Printf("deploying pod: %s", deployment.Name)
@@ -168,7 +173,12 @@ func (m *manager) DeployIngress() (*v12.Ingress, error) {
 func (m *manager) DeployAll() error {
 	log.Printf("Creating functions: %v", m.functions)
 
-	err := m.DeployPod()
+	err := m.DeployNetworkPolicy()
+	if err != nil {
+		fmt.Printf("ERROR: %s\n", err)
+	}
+
+	err = m.DeployPod()
 	if err != nil {
 		fmt.Printf("ERROR: %s\n", err)
 		//return err
