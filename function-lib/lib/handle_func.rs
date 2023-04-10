@@ -3,6 +3,7 @@ use httpcodec::{HttpVersion, ReasonPhrase, Request, RequestDecoder, Response, St
 use serde_json::Value;
 
 pub type HandleFuncType<T> = fn(req: T) -> bytecodec::Result<Response<String>>;
+
 pub type HandleFuncTwoParameterType<T, K> =
     fn(req: T, data: K) -> bytecodec::Result<Response<String>>;
 

@@ -1,20 +1,10 @@
 use crate::handle_func::HandleFunc;
 use crate::WaafFunction;
 use httpcodec::{HttpVersion, ReasonPhrase, Request, Response, StatusCode};
+use std::env;
 use std::io::{Read, Write};
 #[cfg(not(feature = "std"))]
 use wasmedge_wasi_socket::{Shutdown, TcpListener, TcpStream};
-use std::env;
-
-// used as example
-fn handle_http(req: Request<String>) -> bytecodec::Result<Response<String>> {
-    Ok(Response::new(
-        HttpVersion::V1_0,
-        StatusCode::new(200)?,
-        ReasonPhrase::new("")?,
-        format!("echo: {}", req.body()),
-    ))
-}
 
 fn handle_client(mut stream: TcpStream, handle_func: &HandleFunc) -> std::io::Result<()> {
     let mut buff = [0u8; 1024];
