@@ -161,13 +161,48 @@ var __generator = undefined && undefined.__generator || function (thisArg, body)
     };
   }
 };
-// Todo verify
+var __read = undefined && undefined.__read || function (o, n) {
+  var m = typeof Symbol === "function" && o[Symbol.iterator];
+  if (!m) return o;
+  var i = m.call(o),
+    r,
+    ar = [],
+    e;
+  try {
+    while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+  } catch (error) {
+    e = {
+      error: error
+    };
+  } finally {
+    try {
+      if (r && !r.done && (m = i["return"])) m.call(i);
+    } finally {
+      if (e) throw e.error;
+    }
+  }
+  return ar;
+};
+var cr = require("crypto");
+var decodeBase64 = function decodeBase64(str) {
+  return atob(str.replace(/-/g, "+").replace(/_/g, "/"));
+};
+function base64urlEscape(str) {
+  return str.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+}
+function sign(headAndPayload, key) {
+  var base64str = cr.createHmac("sha256", key).update(headAndPayload).digest("base64");
+  return base64urlEscape(base64str);
+}
+function verify(headAndPayload, key, signature) {
+  return signature === sign(headAndPayload, key);
+}
 function hello(r) {
   var _a, _b;
   return __awaiter(this, void 0, void 0, function () {
-    var jwt, token, decoded, function_data, functionName, serviceName, namespace, serviceUri, res, body;
-    return __generator(this, function (_c) {
-      switch (_c.label) {
+    var jwt, _c, header, payload, signature, valid, token, decoded, function_data, functionName, serviceName, namespace, serviceUri, res, body;
+    return __generator(this, function (_d) {
+      switch (_d.label) {
         case 0:
           if (!r.headersIn.Authorization) {
             r.log("No token provided");
@@ -176,6 +211,14 @@ function hello(r) {
           }
 
           jwt = (_a = r.headersIn.Authorization) === null || _a === void 0 ? void 0 : _a.replace("Bearer ", "");
+          _c = __read(jwt.split("."), 3), header = _c[0], payload = _c[1], signature = _c[2];
+          valid = verify([header, payload].join("."), "signing_secret", signature);
+          if (!valid) {
+            r["return"](503, "Token not valid");
+            r.error("Token not valid");
+            return [2 /*return*/];
+          }
+
           token = o(jwt);
           r.log("Token: " + JSON.stringify(token));
           r.log("Temp token: " + r.variables.temp_token);
@@ -184,7 +227,7 @@ function hello(r) {
           })) {
             r["return"](403, "You are not allowed to use this group.");
           }
-          decoded = atob(r.variables.function_data);
+          decoded = decodeBase64(r.variables.function_data);
           function_data = JSON.parse(decoded);
           functionName = r.uri.split("/").reverse()[0];
           serviceName = (_b = function_data.find(function (f) {
@@ -204,10 +247,10 @@ function hello(r) {
             body: r.requestText
           })];
         case 1:
-          res = _c.sent();
+          res = _d.sent();
           return [4 /*yield*/, res.text()];
         case 2:
-          body = _c.sent();
+          body = _d.sent();
           r.log("Function " + functionName + " returned status " + res.status + " with body " + body);
           r["return"](r.status, body);
           return [2 /*return*/];

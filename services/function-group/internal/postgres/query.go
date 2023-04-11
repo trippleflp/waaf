@@ -2,12 +2,12 @@ package postgres
 
 import (
 	"context"
-	"crypto/sha1"
 	"encoding/hex"
 	"encoding/json"
 	"github.com/samber/lo"
 	"github.com/uptrace/bun"
 	"gitlab.informatik.hs-augsburg.de/flomon/waaf/services/api-gateway/graph/model"
+	"golang.org/x/crypto/sha3"
 )
 
 func (c *PgConnection) IsAdmin(userId, groupId string, ctx context.Context) (bool, error) {
@@ -115,7 +115,7 @@ func (c *PgConnection) GetFunctionGroupHash(groupId string, ctx context.Context)
 		return nil, err
 	}
 
-	h := sha1.New()
+	h := sha3.New512()
 	h.Write(bytes)
 	sha1Hash := hex.EncodeToString(h.Sum(nil))
 

@@ -30,7 +30,7 @@
     "strictPropertyInitialization": true,
     "noImplicitThis": true,
     "alwaysStrict": true,
-
+    "downlevelIteration": true,
     "skipLibCheck": true,
     "allowJs": false,
     "checkJs": false,
@@ -41,7 +41,7 @@
     "outDir": "js"
   },
 
-  "include": ["./src"],
+  "include": ["./src/*.ts"],
   // "outDir": ["js"],
   "files": ["./node_modules/njs-types/ngx_http_js_module.d.ts"]
 }

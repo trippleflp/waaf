@@ -22,7 +22,6 @@ func CreateToken(userId string, hashes []string) (string, string, error) {
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			Issuer:    "waaf",
-			Subject:   userId,
 			ID:        jti,
 		},
 	})

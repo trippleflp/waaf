@@ -1,1 +1,0 @@
-C:\Users\flori\Documents\Data\Studium\master\master-thesis\waaf\benchmarks\wasm\hello-world\target\wasm32-wasi\release\hello-world.wasm: C:\Users\flori\Documents\Data\Studium\master\master-thesis\waaf\benchmarks\wasm\hello-world\src\main.rs

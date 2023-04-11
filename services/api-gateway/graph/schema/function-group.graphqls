@@ -20,7 +20,7 @@ input userRolePairInput{
 extend type Query {
     listEntitledGroups: [FunctionGroup]
     getFunctionGroup(functionGroupID: String!): FunctionGroup!
-    functionGroupToken: Token!
+    accessToken: Token!
 }
 
 extend type Mutation {
